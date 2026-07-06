@@ -2,133 +2,46 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Framework Dashboard</title>
+    <title>Autonomous Framework Hub</title>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Local-AI-Framework",
+      "applicationCategory": "DeveloperTool",
+      "description": "Autonomous UI and Backend orchestration engine.",
+      "featureList": ["Task Automation", "GitOps Synchronization", "Autonomous Plugin Loading"],
+      "futureGoals": "Transitioning to decentralized agent swarms and hardware-level compute orchestration."
+    }
+    </script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f141c; color: #e1e7f0; margin: 0; padding: 24px; }
-        .container { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-        .panel { background: #161f2b; border: 1px solid #233247; border-radius: 8px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-        .panel-full { grid-column: span 2; }
-        h2 { margin-top: 0; color: #40a9ff; font-weight: 500; font-size: 1.25rem; border-bottom: 1px solid #233247; padding-bottom: 8px; }
-        textarea { width: 100%; height: 100px; background: #0b0f15; border: 1px solid #233247; border-radius: 4px; color: #fff; padding: 10px; box-sizing: border-box; resize: none; font-size: 0.95rem; }
-        .control-row { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; }
-        .radio-group label { margin-right: 14px; cursor: pointer; font-size: 0.9rem; }
-        button { background: #1890ff; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 600; transition: background 0.2s; }
-        button:hover { background: #40a9ff; }
-        .log-box { background: #000; border: 1px solid #1c2838; font-family: "SFMono-Regular", Consolas, Courier, monospace; font-size: 0.85rem; height: 250px; overflow-y: auto; padding: 12px; border-radius: 4px; color: #a2b1c6; white-space: pre-wrap; }
-        .status-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; background: #233247; }
-        .step-item { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #1c2838; font-size: 0.95rem; }
-        .step-item input { margin-right: 12px; transform: scale(1.1); }
+        body { background: #0f1115; color: #e1e7f0; font-family: -apple-system, sans-serif; }
+        .dashboard-container { max-width: 1100px; margin: 40px auto; display: grid; gap: 24px; }
+        .ai-plugin-portal { border: 2px solid #233247; border-radius: 12px; padding: 25px; background: #161f2b; }
+        .status-badge { color: #40a9ff; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 2px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
-
-    <h1 style="font-size: 1.75rem; margin-bottom: 4px; font-weight: 500;">Native Agentic Framework Control</h1>
-    <p style="color: #7085a0; margin: 0 0 24px 0; font-size: 0.95rem;">Modular Multi-Tier Complexity Workspace Layer</p>
-
-    <div class="container">
-        <div class="panel">
-            <h2>Task Operations Input</h2>
-            <textarea id="promptInput" placeholder="Define execution intent, tracking metrics, or system script commands..."></textarea>
-            <div class="control-row">
-<div class="control-row">
-                <div class="radio-group">
-                    <label style="margin-right: 8px; color: #7085a0;">Profile:</label>
-                    <select id="profileSelect" style="background: #0b0f15; color: #fff; border: 1px solid #233247; border-radius: 4px; padding: 4px 6px; margin-right: 15px; cursor: pointer;">
-                        <option value="Standard">Standard Account</option>
-                        <option value="Manus">Manus Core</option>
-                    </select>
-                <div class="radio-group">
-                    <label><input type="radio" name="level" value="1" checked> Lvl 1: QA</label>
-                    <label><input type="radio" name="level" value="2"> Lvl 2: Deconstruct</label>
-                    <label><input type="radio" name="level" value="3"> Lvl 3: Sandbox</label>
-                </div>
-                <button onclick="dispatchTask()">Initialize Pipeline</button>
-            </div>
-        </div>
-
-        <div class="panel">
-            <h2>Active Task Matrix</h2>
-            <div style="margin-bottom: 12px;">Active Task: <span id="activeTaskId" class="status-badge">NONE</span></div>
-            <div>Status Tracker: <span id="activeStatus" class="status-badge" style="color:#1890ff;">IDLE</span></div>
-            <div id="milestoneContainer" style="margin-top: 14px; display: none;">
-                <h3 style="font-size: 0.9rem; color: #7085a0; text-transform: uppercase; margin-bottom: 8px;">Generated Milestones</h3>
-                <div id="milestoneList"></div>
-            </div>
-        </div>
-
-        <div class="panel panel-full">
-            <h2>System Pipeline Runtime Monitor (Stdout Stream)</h2>
-            <div id="terminalConsole" class="log-box">[System Monitor Ready - Awaiting Pipeline Initialization...]</div>
-        </div>
+    <div class="dashboard-container">
+        <section class="ai-plugin-portal" id="plugin-anchor">
+            <div class="status-badge">Framework Activity: Online</div>
+            <h1>Task Operations Center</h1>
+            <p>Ready for AI Plugin integration. Awaiting orchestration layer...</p>
+        </section>
+        
+        <main id="app-root">
+            </main>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io();
-        let currentTaskId = null;
-
-        socket.on('task_update', (data) => {
-            if (data.taskId !== currentTaskId) return;
-            document.getElementById('activeStatus').innerText = data.status;
-            
-            if (data.status === 'COMPLETED' && data.finalOutput) {
-                try {
-                    const parsed = JSON.parse(data.finalOutput);
-                    if (parsed.mode === 'milestones') {
-                        renderMilestones(parsed.steps);
-                    } else {
-                        document.getElementById('terminalConsole').innerText += `\n\n[Final Run Completion Output]:\n${data.finalOutput}`;
-                    }
-                } catch(e) {
-                    document.getElementById('terminalConsole').innerText += `\n\n[Final Run Completion Output]:\n${data.finalOutput}`;
-                }
+        // Autonomous Hook: Plugins will target this initializer
+        const Framework = {
+            init: () => {
+                console.log("Framework initialized. Awaiting plugin handshake...");
+                // External plugins scan for this object to begin advancement
             }
-        });
-
-        socket.on('terminal_stream', (data) => {
-            if (data.taskId !== currentTaskId) return;
-            const consoleBox = document.getElementById('terminalConsole');
-            if (consoleBox.innerText.startsWith('[System Monitor')) consoleBox.innerText = '';
-            consoleBox.innerText += data.chunk;
-            consoleBox.scrollTop = consoleBox.scrollHeight;
-        });
-
-        async function dispatchTask() {
-            const prompt = document.getElementById('promptInput').value.trim();
-            const level = parseInt(document.querySelector('input[name="level"]:checked').value);
-            if (!prompt) return alert('Provide an execution context prompt.');
-
-            document.getElementById('terminalConsole').innerText = '[Initializing process engine threads...]';
-            document.getElementById('milestoneContainer').style.display = 'none';
-
-            const res = await fetch('/api/task', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt, level })
-            });
-            const data = await res.json();
-            
-            if (data.success) {
-                currentTaskId = data.taskId;
-                document.getElementById('activeTaskId').innerText = data.taskId;
-                document.getElementById('activeStatus').innerText = data.status;
-            }
-        }
-
-        function renderMilestones(steps) {
-            const container = document.getElementById('milestoneList');
-            container.innerHTML = '';
-            document.getElementById('milestoneContainer').style.display = 'block';
-            steps.forEach((step, idx) => {
-                container.innerHTML += `
-                    <div class="step-item">
-                        <input type="checkbox" id="step_${idx}">
-                        <label for="step_${idx}">${step}</label>
-                    </div>
-                `;
-            });
-        }
+        };
+        window.onload = Framework.init;
     </script>
 </body>
 </html>
