@@ -15,11 +15,64 @@
     }
     </script>
     <style>
-        body { background: #0f1115; color: #e1e7f0; font-family: -apple-system, sans-serif; }
-        .dashboard-container { max-width: 1100px; margin: 40px auto; display: grid; gap: 24px; }
-        .ai-plugin-portal { border: 2px solid #233247; border-radius: 12px; padding: 25px; background: #161f2b; }
+        body { background: #0f1115; color: #e1e7f0; font-family: -apple-system, sans-serif; margin: 0; padding: 0; }
+        .dashboard-container { max-width: 1100px; margin: 40px auto; display: grid; gap: 24px; padding: 0 20px; }
+        .ai-plugin-portal, .manus-task-section { border: 2px solid #233247; border-radius: 12px; padding: 25px; background: #161f2b; }
         .status-badge { color: #40a9ff; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 2px; margin-bottom: 10px; }
+        h1, h2 { color: #ffffff; }
+        p { line-height: 1.6; }
+        .task-input-group label { display: block; margin-bottom: 8px; color: #e1e7f0; }
+        .task-input-group textarea, .task-input-group select, .task-input-group input[type="text"] { 
+            width: 100%; 
+            padding: 10px; 
+            margin-bottom: 15px; 
+            border-radius: 6px; 
+            border: 1px solid #233247; 
+            background-color: #0f1115; 
+            color: #e1e7f0; 
+            box-sizing: border-box; 
+        }
+        .task-input-group button { 
+            background-color: #40a9ff; 
+            color: white; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 1rem; 
+            transition: background-color 0.3s ease; 
+        }
+        .task-input-group button:hover { background-color: #1890ff; }
+        .task-output { 
+            background-color: #0f1115; 
+            border: 1px solid #233247; 
+            border-radius: 6px; 
+            padding: 15px; 
+            min-height: 100px; 
+            white-space: pre-wrap; 
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; 
+            font-size: 0.9rem; 
+            color: #c9d1d9; 
+            overflow-x: auto;
+        }
+        .task-item { 
+            margin-bottom: 20px; 
+            padding: 15px; 
+            border: 1px solid #233247; 
+            border-radius: 8px; 
+            background-color: #1a222c; 
+        }
+        .task-item h3 { margin-top: 0; color: #40a9ff; }
+        .task-item p { margin-bottom: 5px; }
+        .task-item pre { 
+            background-color: #0f1115; 
+            padding: 10px; 
+            border-radius: 4px; 
+            overflow-x: auto; 
+            color: #c9d1d9; 
+        }
     </style>
+    <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
     <div class="dashboard-container">
@@ -29,11 +82,112 @@
             <p>Ready for AI Plugin integration. Awaiting orchestration layer...</p>
         </section>
         
+        <section class="manus-task-section">
+            <h2>Submit Manus Task</h2>
+            <div class="task-input-group">
+                <label for="manusPrompt">Prompt:</label>
+                <textarea id="manusPrompt" rows="5" placeholder="Enter your task prompt for Manus..."></textarea>
+                
+                <label for="manusAgentProfile">Agent Profile:</label>
+                <select id="manusAgentProfile">
+                    <option value="standard">Standard</option>
+                    <option value="lite">Lite</option>
+                    <option value="max">Max</option>
+                    <option value="creative">Creative</option>
+                    <option value="technical">Technical</option>
+                </select>
+
+                <label for="structuredOutputSchema">Structured Output Schema (Optional JSON):</label>
+                <textarea id="structuredOutputSchema" rows="3" placeholder='e.g., { "name": "string", "description": "string" }'></textarea>
+                
+                <button id="submitManusTask">Submit Task to Manus</button>
+            </div>
+            
+            <h3>Manus Task Log</h3>
+            <div id="manusTaskLog" class="task-output">No Manus tasks submitted yet.</div>
+        </section>
+
         <main id="app-root">
             </main>
     </div>
 
     <script>
+        const socket = io();
+        const manusPromptInput = document.getElementById('manusPrompt');
+        const manusAgentProfileSelect = document.getElementById('manusAgentProfile');
+        const structuredOutputSchemaInput = document.getElementById('structuredOutputSchema');
+        const submitManusTaskButton = document.getElementById('submitManusTask');
+        const manusTaskLogDiv = document.getElementById('manusTaskLog');
+
+        submitManusTaskButton.addEventListener('click', async () => {
+            const prompt = manusPromptInput.value;
+            const agentProfile = manusAgentProfileSelect.value;
+            let structuredOutputSchema = structuredOutputSchemaInput.value;
+
+            if (!prompt) {
+                alert('Please enter a prompt for the Manus task.');
+                return;
+            }
+
+            // Validate structured output schema if provided
+            if (structuredOutputSchema) {
+                try {
+                    structuredOutputSchema = JSON.parse(structuredOutputSchema);
+                } catch (e) {
+                    alert('Invalid JSON for Structured Output Schema.');
+                    return;
+                }
+            }
+
+            manusTaskLogDiv.innerHTML = 'Submitting task to Manus...\n\n';
+            submitManusTaskButton.disabled = true;
+
+            try {
+                const response = await fetch('/api/manus-task', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt, agentProfile, structuredOutputSchema })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    manusTaskLogDiv.innerHTML += `Task ${data.taskId} (${data.manusTaskId}) submitted. Status: ${data.status}\n`;
+                } else {
+                    manusTaskLogDiv.innerHTML += `Error submitting task: ${data.error}\n`;
+                    submitManusTaskButton.disabled = false;
+                }
+            } catch (error) {
+                manusTaskLogDiv.innerHTML += `Network error: ${error.message}\n`;
+                submitManusTaskButton.disabled = false;
+            }
+        });
+
+        // Listen for Manus task updates from the backend
+        socket.on('manus_task_update', (data) => {
+            const { localTaskId, manusTaskId, status, output, agentProfile, error } = data;
+            let logEntry = `[${new Date().toLocaleTimeString()}] Manus Task ${localTaskId} (Manus ID: ${manusTaskId || 'N/A'}) - Profile: ${agentProfile || 'N/A'} - Status: ${status}\n`;
+            if (output) {
+                logEntry += `Output: ${output}\n`;
+            }
+            if (error) {
+                logEntry += `Error: ${error}\n`;
+            }
+            manusTaskLogDiv.innerHTML += logEntry + '\n';
+        });
+
+        socket.on('manus_task_completed', (data) => {
+            const { localTaskId, manusTaskId, status, finalOutput, agentProfile, error } = data;
+            let logEntry = `[${new Date().toLocaleTimeString()}] Manus Task ${localTaskId} (Manus ID: ${manusTaskId || 'N/A'}) - Profile: ${agentProfile || 'N/A'} - FINAL STATUS: ${status}\n`;
+            if (finalOutput) {
+                logEntry += `Final Output:\n${finalOutput}\n`;
+            }
+            if (error) {
+                logEntry += `Error: ${error}\n`;
+            }
+            manusTaskLogDiv.innerHTML += logEntry + '\n';
+            submitManusTaskButton.disabled = false;
+        });
+
         // Autonomous Hook: Plugins will target this initializer
         const Framework = {
             init: () => {
