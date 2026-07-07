@@ -1,20 +1,32 @@
-    const { exec } = require('child_process');
+require('dotenv').config();
+const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const { OpenAI } = require('openai');
 const simpleGit = require('simple-git');
+const fetch = require('node-fetch');
 
 const SERVER_URL = 'http://127.0.0.1:5000';
 const POLL_INTERVAL = 3000; 
-const PROJECT_DIR = 'C:/Users/cjswe/local-ai-framework';
+const PROJECT_DIR = __dirname; // Using __dirname for portability
 
 const git = simpleGit(PROJECT_DIR);
+
+// Manus API Configuration
+const MANUS_API_KEY = process.env.MANUS_API_KEY;
+const MANUS_API_BASE_URL = 'https://api.manus.ai/v2'; // Pointing to Manus API v2
+
+// Determine if we should use Manus or local Ollama
+const useManus = !!MANUS_API_KEY;
+
 const openai = new OpenAI({
-    baseURL: 'http://127.0.0.1:11434/v1', // Pointing to local Ollama instance
-    apiKey: 'local-machine-token' 
+    baseURL: useManus ? MANUS_API_BASE_URL : 'http://127.0.0.1:11434/v1',
+    apiKey: useManus ? MANUS_API_KEY : 'local-machine-token' 
 });
 
-console.log("-> [Autonomous Git UI Agent Worker] Status: Active. Awaiting orchestration intents...");
+console.log(`-> [Autonomous Git UI Agent Worker] Status: Active.`);
+console.log(`-> Mode: ${useManus ? 'Manus API' : 'Local Ollama'}`);
+console.log("-> Awaiting orchestration intents...");
 
 async function agentLoop() {
     while (true) {
@@ -28,20 +40,20 @@ async function agentLoop() {
                 const systemPrompt = `You are an autonomous UI engineer with access to Git.
 Your objective is to safely modify or update the project's UI files based on user requests.
 Available file paths:
-- C:/Users/cjswe/local-ai-framework/public/index.html (Dashboard Interface)
-- C:/Users/cjswe/local-ai-framework/index.js (Backend Server Layer)
+- ${path.join(PROJECT_DIR, 'public', 'index.html')} (Dashboard Interface)
+- ${path.join(PROJECT_DIR, 'index.js')} (Backend Server Layer)
 
 You must respond ONLY with a valid JSON object matching this schema. Do not wrap it in markdown code blocks:
 {
     "reasoning": "Brief technical explanation of your plan to update the UI section.",
-    "target_file": "C:/Users/cjswe/local-ai-framework/public/index.html",
+    "target_file": "${path.join(PROJECT_DIR, 'public', 'index.html')}",
     "file_content": "The complete updated code content of the target file.",
     "git_action": "branch-and-commit",
     "commit_message": "feat: update UI layout section"
 }`;
 
                 const completion = await openai.chat.completions.create({
-                    model: 'llama3', 
+                    model: useManus ? 'gpt-4o' : 'llama3', 
                     messages: [
                         { role: 'system', content: systemPrompt },
                         { role: 'user', content: `Task Request: ${task.command}` }
