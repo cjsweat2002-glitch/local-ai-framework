@@ -3,199 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <title>Autonomous Framework Hub</title>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Local-AI-Framework",
-      "applicationCategory": "DeveloperTool",
-      "description": "Autonomous UI and Backend orchestration engine.",
-      "featureList": ["Task Automation", "GitOps Synchronization", "Autonomous Plugin Loading"],
-      "futureGoals": "Transitioning to decentralized agent swarms and hardware-level compute orchestration."
-    }
-    </script>
     <style>
-        body { background: #0f1115; color: #e1e7f0; font-family: -apple-system, sans-serif; margin: 0; padding: 0; }
-        .dashboard-container { max-width: 1100px; margin: 40px auto; display: grid; gap: 24px; padding: 0 20px; }
-        .ai-plugin-portal, .manus-task-section { border: 2px solid #233247; border-radius: 12px; padding: 25px; background: #161f2b; }
-        .status-badge { color: #40a9ff; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 2px; margin-bottom: 10px; }
-        h1, h2 { color: #ffffff; }
-        p { line-height: 1.6; }
-        .task-input-group label { display: block; margin-bottom: 8px; color: #e1e7f0; }
-        .task-input-group textarea, .task-input-group select, .task-input-group input[type="text"] { 
-            width: 100%; 
-            padding: 10px; 
-            margin-bottom: 15px; 
-            border-radius: 6px; 
-            border: 1px solid #233247; 
-            background-color: #0f1115; 
-            color: #e1e7f0; 
-            box-sizing: border-box; 
-        }
-        .task-input-group button { 
-            background-color: #40a9ff; 
-            color: white; 
-            padding: 10px 20px; 
-            border: none; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            font-size: 1rem; 
-            transition: background-color 0.3s ease; 
-        }
-        .task-input-group button:hover { background-color: #1890ff; }
-        .task-output { 
-            background-color: #0f1115; 
-            border: 1px solid #233247; 
-            border-radius: 6px; 
-            padding: 15px; 
-            min-height: 100px; 
-            white-space: pre-wrap; 
-            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; 
-            font-size: 0.9rem; 
-            color: #c9d1d9; 
-            overflow-x: auto;
-        }
-        .task-item { 
-            margin-bottom: 20px; 
-            padding: 15px; 
-            border: 1px solid #233247; 
-            border-radius: 8px; 
-            background-color: #1a222c; 
-        }
-        .task-item h3 { margin-top: 0; color: #40a9ff; }
-        .task-item p { margin-bottom: 5px; }
-        .task-item pre { 
-            background-color: #0f1115; 
-            padding: 10px; 
-            border-radius: 4px; 
-            overflow-x: auto; 
-            color: #c9d1d9; 
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0f1115; color: #e1e7f0; font-family: -apple-system, sans-serif; height: 100vh; overflow: hidden; }
+        .app-container { display: flex; height: 100vh; }
+        .sidebar { width: 280px; background: #161f2b; border-right: 2px solid #233247; display: flex; flex-direction: column; padding: 20px; overflow-y: auto; }
+        .sidebar-header { margin-bottom: 30px; }
+        .sidebar-header h1 { font-size: 1.2rem; color: #40a9ff; }
+        .branch-list { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        .branch-item { padding: 12px; border-radius: 8px; cursor: pointer; transition: 0.3s; background: #1a222c; color: #c9d1d9; }
+        .branch-item:hover { background: #233247; border-color: #40a9ff; }
+        .branch-item.active { background: #40a9ff; color: #0f1115; font-weight: 600; }
+        .main-content { flex: 1; display: flex; flex-direction: column; }
+        .chat-container { flex: 1; display: flex; flex-direction: column; background: #0f1115; overflow: hidden; }
+        .chat-header { padding: 20px; border-bottom: 2px solid #233247; background: #161f2b; }
+        .messages-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .message { display: flex; gap: 12px; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .message.user { justify-content: flex-end; }
+        .message-content { max-width: 70%; padding: 12px 16px; border-radius: 12px; line-height: 1.5; }
+        .message.assistant .message-content { background: #233247; border-left: 3px solid #40a9ff; }
+        .message.user .message-content { background: #40a9ff; color: #0f1115; }
+        .message.system .message-content { background: #1a222c; color: #8b95a5; font-size: 0.85rem; text-align: center; }
+        .input-area { padding: 20px; border-top: 2px solid #233247; background: #161f2b; display: flex; gap: 10px; }
+        .message-input { flex: 1; padding: 12px 16px; border-radius: 8px; border: 2px solid #233247; background: #0f1115; color: #e1e7f0; resize: none; }
+        .send-button { padding: 12px 20px; background: #40a9ff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .loading { display: inline-block; width: 8px; height: 8px; background: #40a9ff; border-radius: 50%; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
     </style>
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
-    <div class="dashboard-container">
-        <section class="ai-plugin-portal" id="plugin-anchor">
-            <div class="status-badge">Framework Activity: Online</div>
-            <h1>Task Operations Center</h1>
-            <p>Ready for AI Plugin integration. Awaiting orchestration layer...</p>
-        </section>
-        
-        <section class="manus-task-section">
-            <h2>Submit Manus Task</h2>
-            <div class="task-input-group">
-                <label for="manusPrompt">Prompt:</label>
-                <textarea id="manusPrompt" rows="5" placeholder="Enter your task prompt for Manus..."></textarea>
-                
-                <label for="manusAgentProfile">Agent Profile:</label>
-                <select id="manusAgentProfile">
-                    <option value="standard">Standard</option>
-                    <option value="lite">Lite</option>
-                    <option value="max">Max</option>
-                    <option value="creative">Creative</option>
-                    <option value="technical">Technical</option>
-                </select>
-
-                <label for="structuredOutputSchema">Structured Output Schema (Optional JSON):</label>
-                <textarea id="structuredOutputSchema" rows="3" placeholder='e.g., { "name": "string", "description": "string" }'></textarea>
-                
-                <button id="submitManusTask">Submit Task to Manus</button>
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="sidebar-header"><h1>AI Framework</h1><p>Orchestration Hub</p></div>
+            <div class="branch-list" id="branchList"></div>
+        </div>
+        <div class="main-content">
+            <div class="chat-container">
+                <div class="chat-header"><h2 id="branchTitle">Welcome</h2><p id="branchDescription">Select a branch to start</p></div>
+                <div class="messages-area" id="messagesArea"></div>
+                <div class="input-area">
+                    <textarea class="message-input" id="messageInput" placeholder="Describe your task..." rows="1"></textarea>
+                    <button class="send-button" id="sendButton">Send</button>
+                </div>
             </div>
-            
-            <h3>Manus Task Log</h3>
-            <div id="manusTaskLog" class="task-output">No Manus tasks submitted yet.</div>
-        </section>
-
-        <main id="app-root">
-            </main>
+        </div>
     </div>
-
     <script>
         const socket = io();
-        const manusPromptInput = document.getElementById('manusPrompt');
-        const manusAgentProfileSelect = document.getElementById('manusAgentProfile');
-        const structuredOutputSchemaInput = document.getElementById('structuredOutputSchema');
-        const submitManusTaskButton = document.getElementById('submitManusTask');
-        const manusTaskLogDiv = document.getElementById('manusTaskLog');
-
-        submitManusTaskButton.addEventListener('click', async () => {
-            const prompt = manusPromptInput.value;
-            const agentProfile = manusAgentProfileSelect.value;
-            let structuredOutputSchema = structuredOutputSchemaInput.value;
-
-            if (!prompt) {
-                alert('Please enter a prompt for the Manus task.');
-                return;
-            }
-
-            // Validate structured output schema if provided
-            if (structuredOutputSchema) {
-                try {
-                    structuredOutputSchema = JSON.parse(structuredOutputSchema);
-                } catch (e) {
-                    alert('Invalid JSON for Structured Output Schema.');
-                    return;
-                }
-            }
-
-            manusTaskLogDiv.innerHTML = 'Submitting task to Manus...\n\n';
-            submitManusTaskButton.disabled = true;
-
+        const branchList = document.getElementById('branchList');
+        const messagesArea = document.getElementById('messagesArea');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const branchTitle = document.getElementById('branchTitle');
+        const branches = {
+            'code': { icon: '💻', name: 'Code Generation', desc: 'Build and optimize software' },
+            'content': { icon: '✍️', name: 'Content Creation', desc: 'Draft and edit copy' },
+            'analysis': { icon: '📊', name: 'Data Analysis', desc: 'Process and visualize data' },
+            'automation': { icon: '⚙️', name: 'Automation', desc: 'Design workflows' }
+        };
+        let currentBranch = null;
+        let history = [];
+        function init() {
+            Object.entries(branches).forEach(([key, b]) => {
+                const div = document.createElement('div');
+                div.className = 'branch-item';
+                div.innerHTML = `${b.icon} ${b.name}`;
+                div.onclick = () => {
+                    currentBranch = key;
+                    document.querySelectorAll('.branch-item').forEach(i => i.classList.remove('active'));
+                    div.classList.add('active');
+                    branchTitle.innerText = b.name;
+                    messagesArea.innerHTML = '';
+                    addMsg(`Switched to ${b.name} branch.`, 'system');
+                };
+                branchList.appendChild(div);
+            });
+        }
+        function addMsg(c, s = 'assistant') {
+            const d = document.createElement('div');
+            d.className = `message ${s}`;
+            d.innerHTML = `<div class="message-content">${c}</div>`;
+            messagesArea.appendChild(d);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+        async function send() {
+            const m = messageInput.value.trim();
+            if (!m || !currentBranch) return;
+            addMsg(m, 'user');
+            messageInput.value = '';
+            const l = document.createElement('div');
+            l.className = 'message assistant';
+            l.innerHTML = '<div class="message-content">Thinking<span class="loading"></span></div>';
+            messagesArea.appendChild(l);
             try {
-                const response = await fetch('/api/manus-task', {
+                const r = await fetch('/api/manus-task', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt, agentProfile, structuredOutputSchema })
+                    body: JSON.stringify({ prompt: m, branch: currentBranch, conversationHistory: history })
                 });
-                const data = await response.json();
-
-                if (data.success) {
-                    manusTaskLogDiv.innerHTML += `Task ${data.taskId} (${data.manusTaskId}) submitted. Status: ${data.status}\n`;
-                } else {
-                    manusTaskLogDiv.innerHTML += `Error submitting task: ${data.error}\n`;
-                    submitManusTaskButton.disabled = false;
-                }
-            } catch (error) {
-                manusTaskLogDiv.innerHTML += `Network error: ${error.message}\n`;
-                submitManusTaskButton.disabled = false;
-            }
-        });
-
-        // Listen for Manus task updates from the backend
-        socket.on('manus_task_update', (data) => {
-            const { localTaskId, manusTaskId, status, output, agentProfile, error } = data;
-            let logEntry = `[${new Date().toLocaleTimeString()}] Manus Task ${localTaskId} (Manus ID: ${manusTaskId || 'N/A'}) - Profile: ${agentProfile || 'N/A'} - Status: ${status}\n`;
-            if (output) {
-                logEntry += `Output: ${output}\n`;
-            }
-            if (error) {
-                logEntry += `Error: ${error}\n`;
-            }
-            manusTaskLogDiv.innerHTML += logEntry + '\n';
-        });
-
-        socket.on('manus_task_completed', (data) => {
-            const { localTaskId, manusTaskId, status, finalOutput, agentProfile, error } = data;
-            let logEntry = `[${new Date().toLocaleTimeString()}] Manus Task ${localTaskId} (Manus ID: ${manusTaskId || 'N/A'}) - Profile: ${agentProfile || 'N/A'} - FINAL STATUS: ${status}\n`;
-            if (finalOutput) {
-                logEntry += `Final Output:\n${finalOutput}\n`;
-            }
-            if (error) {
-                logEntry += `Error: ${error}\n`;
-            }
-            manusTaskLogDiv.innerHTML += logEntry + '\n';
-            submitManusTaskButton.disabled = false;
-        });
-
-        // Autonomous Hook: Plugins will target this initializer
-        const Framework = {
-            init: () => {
-                console.log("Framework initialized. Awaiting plugin handshake...");
-                // External plugins scan for this object to begin advancement
-            }
-        };
-        window.onload = Framework.init;
+                const d = await r.json();
+                l.remove();
+                if (d.success) history.push({ role: 'user', content: m });
+                else addMsg(`Error: ${d.error}`);
+            } catch (e) { l.remove(); addMsg(`Error: ${e.message}`); }
+        }
+        socket.on('manus_task_update', d => addMsg(`[${d.status}] ${d.output || ''}`, 'system'));
+        socket.on('manus_task_completed', d => addMsg(d.error ? `Failed: ${d.error}` : `Completed: ${d.finalOutput}`));
+        sendButton.onclick = send;
+        init();
     </script>
 </body>
 </html>
