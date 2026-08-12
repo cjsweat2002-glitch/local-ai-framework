@@ -79,3 +79,19 @@ The first tensor exchange submission was attempted with a symbolic interface bas
 The retry succeeded once the exchange action was brought above the preview overlay. The isolated ledger displayed `Symbolic interface baseline retry` as version 1 in `tensor/parent-1/child-2`, and the audit stream recorded `exchange.created` with the folder/version provenance.
 
 The manual integrity watcher reviewed the child against one versioned exchange and one owner-entered market signal, then created a proposed refinement with integrity and noise scores. Following explicit user approval, the child purpose was updated, the proposal became approved, an approval exchange was added as version 2, and the audit stream recorded both `watcher.approved` and its versioned exchange provenance. No external action or background process was triggered.
+
+## Governed System Factory safeguards — August 12, 2026
+
+The parent watcher-consent control was verified in the authenticated workspace. Reviews were unavailable while consent was disabled, then became available only after the owner enabled manual watcher reviews; the consent change appeared in the audit history. A repeat review was rejected with `watcher.proposed is rate-limited for 15 minute(s) to prevent noise`, confirming the low-noise proposal cooldown.
+
+After the cooldown elapsed, a fresh manual review created a bounded proposal with integrity `67` and noise `36`, meeting the meaningful-signal threshold. The child purpose remains unchanged and the proposal awaits an explicit owner decision. The approval path records an approval-generated tensor exchange separately from owner-created exchanges, so a valid human approval is not blocked by the two-minute manual exchange cooldown.
+
+The permanent domain served the updated unauthenticated System Factory screen at `/system-factory?release=b105c747`, confirming the new route is live. Authenticated production verification requires an owner session on the production domain.
+
+Following the owner's explicit approval, the pending proposal was applied successfully. The child purpose was updated, the proposal status became `approved`, and the isolated ledger added `tensor/parent-1/child-2@v3`. The audit history recorded `exchange.approved` and `watcher.approved` at the same time, demonstrating that the approval-generated lineage record completed without triggering the two-minute owner-exchange cooldown.
+
+Authenticated production verification then confirmed that the canonical `/system-factory` route serves the same owner workspace: parent and child records loaded, watcher consent was shown as enabled with its owner control, the child ledger exposed the new version 3 approval exchange, and the audit history showed both `exchange.approved` and `watcher.approved` for the approved proposal.
+
+The live production watcher button was then exercised again while the existing 15-minute interval remained active. The UI displayed `watcher.proposed is rate-limited for 15 minute(s) to prevent noise`; open proposals remained at zero and no new lineage record was added. This confirms the production cooldown response is owner-visible and non-mutating.
+
+The production parent consent setting was then cycled under the authenticated owner account. With consent disabled, the parent badge changed to `watcher consent disabled`, the review button was replaced with `Enable manual watcher reviews on the parent before proposing a development change`, and the audit stream recorded `watcher.consent_disabled`. Consent was restored immediately afterward; the review control reappeared, `watcher.consent_enabled` was recorded, and no new proposal or exchange was created during the verification.

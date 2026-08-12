@@ -81,9 +81,14 @@
 - [x] Build a personal-development child workspace with symbolic language, interface model, capability relationships, and provider market-signal records.
 - [x] Implement integrity watchers that assess progress, identify meaningful deltas, and emit bounded proposals rather than autonomous actions.
 - [x] Enforce watcher consent, cooldown, and meaningful-signal thresholds for exchanges, signals, and review proposals.
-- [ ] Re-run post-safeguard parent approval validation: proposal approval updates the child, writes an approval exchange, and records the full audit sequence without violating cooldown policy.
-- [ ] Save and verify the governed System Factory safeguards in the permanent production release.
-- [ ] Synchronize the governed System Factory safeguards to GitHub master and confirm the pushed source matches the release.
+- [x] Re-run post-safeguard parent approval validation: proposal approval updates the child, writes an approval exchange, and records the full audit sequence without violating cooldown policy.
+- [x] Save and publish the governed System Factory safeguards in the permanent production release (checkpoint b105c747).
+- [x] Verify the canonical production System Factory route serves the published release without cache-busting.
+- [x] Validate the authenticated owner production workspace: consent control, review gating, cooldown response, and audit history.
+- [x] Validate the production consent-gating cycle: disable watcher consent, confirm review is blocked, then re-enable consent and confirm review availability without creating a new proposal.
+- [ ] Confirm production release parity with checkpoint b105c747 and GitHub master a4fa933.
+- [x] Synchronize the governed System Factory safeguards to GitHub master and confirm the pushed source matches the release (master a4fa933).
+- [x] Apply the user-approved watcher proposal for Interface Differentiation Child and verify its human-approved lineage records.
 
 ## Security and verification follow-ups
 - [x] Add ownership checks to message.add and task.submit so users cannot write to another user's conversation.
