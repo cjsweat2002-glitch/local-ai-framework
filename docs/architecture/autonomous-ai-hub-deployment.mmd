@@ -1,0 +1,55 @@
+flowchart LR
+  %% Autonomous AI Hub — recommended full-stack deployment
+  U["User Browser\n• Manus OAuth sign-in\n• Branch-scoped chat\n• Live SSE token rendering"]
+  G["Custom Domain / HTTPS\nManaged hosting edge"]
+
+  subgraph H["Managed Full-Stack Hosting Environment"]
+    direction TB
+    UI["React + Vite client\nBlueprint interface"]
+    API["Express + tRPC server\nAuth, ownership checks, task router"]
+    SSE["Forge SSE endpoint\nToken forwarding + partial-state persistence"]
+    SESS["Signed session cookies\nManus OAuth callback"]
+    UI --> API
+    API --> SSE
+    API --> SESS
+  end
+
+  subgraph D["Managed Data Layer"]
+    DB[("MySQL / TiDB\nusers · conversations · messages · tasks")]
+  end
+
+  subgraph P["AI Provider Layer"]
+    FORGE["Built-in Forge API\nReal-time streamed completions"]
+    MANUS["Manus API v2\nAsync tasks + event polling"]
+  end
+
+  subgraph S["Secret & Access Boundary"]
+    SECRETS["Hosted environment secrets\nForge key · Manus API credential\nJWT / OAuth configuration"]
+  end
+
+  subgraph GH["GitHub Delivery Workflow"]
+    REPO["GitHub repository\nSource, tests, workflow files"]
+    CI["GitHub Actions (optional)\nLint · type check · Vitest"]
+    REPO --> CI
+  end
+
+  U -->|HTTPS| G --> UI
+  API <-->|persistent history & task state| DB
+  SSE -->|Bearer-authenticated streaming| FORGE
+  API -->|server-side API calls| MANUS
+  SECRETS -. injected only at runtime .-> API
+  SECRETS -. injected only at runtime .-> SSE
+  REPO -. source export / deployment workflow .-> H
+
+  classDef user fill:#eefaff,stroke:#0ea5b7,stroke-width:2px,color:#0b2e33;
+  classDef app fill:#f5f4ff,stroke:#8b5cf6,stroke-width:2px,color:#27134f;
+  classDef data fill:#fff7ed,stroke:#f59e0b,stroke-width:2px,color:#4a2600;
+  classDef provider fill:#fdf2f8,stroke:#ec4899,stroke-width:2px,color:#4a0e2e;
+  classDef security fill:#f0fdf4,stroke:#16a34a,stroke-width:2px,color:#123a20;
+  classDef github fill:#f8fafc,stroke:#475569,stroke-width:2px,color:#172033;
+  class U,G user;
+  class UI,API,SSE,SESS app;
+  class DB data;
+  class FORGE,MANUS provider;
+  class SECRETS security;
+  class REPO,CI github;

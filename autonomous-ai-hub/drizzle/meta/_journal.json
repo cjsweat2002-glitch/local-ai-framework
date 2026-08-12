@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1785988540701,
+      "tag": "0000_bouncy_paper_doll",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1785988820330,
+      "tag": "0001_fresh_the_hand",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1786568445642,
+      "tag": "0002_worried_wolfpack",
+      "breakpoints": true
+    }
+  ]
+}
