@@ -24,7 +24,7 @@ type ActiveTask = {
   assistantMessageId: number;
 };
 
-type ForgeStreamEvent =
+type ProviderStreamEvent =
   | { type: 'status'; status: TaskStatus }
   | { type: 'token'; token: string }
   | { type: 'error'; message: string };
@@ -44,8 +44,8 @@ function toMessage(message: { id: number; conversationId: number; role: string; 
 export default function ConversationChat({ branch }: ConversationChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
-  const [agentProfile, setAgentProfile] = useState<typeof AGENT_PROFILES[number]>('Standard');
-  const [provider, setProvider] = useState<AIProvider>('manus');
+  const [agentProfile, setAgentProfile] = useState<typeof AGENT_PROFILES[number]>('Lite');
+  const [provider, setProvider] = useState<AIProvider>('built-in-forge');
   const [isLoading, setIsLoading] = useState(false);
   const [activeTask, setActiveTask] = useState<ActiveTask | null>(null);
   const [streamTarget, setStreamTarget] = useState<{ messageId: number; content: string } | null>(null);
@@ -183,14 +183,14 @@ export default function ConversationChat({ branch }: ConversationChatProps) {
     return () => window.clearInterval(timer);
   }, [streamTarget]);
 
-  const streamBuiltInForge = async (input: {
+  const streamProvider = async (streamingProvider: 'built-in-forge' | 'google-gemini', input: {
     taskId: number;
     assistantMessageId: number;
     prompt: string;
     conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }>;
   }) => {
     if (!conversation) return;
-    const response = await fetch('/api/forge/stream', {
+    const response = await fetch(streamingProvider === 'google-gemini' ? '/api/gemini/stream' : '/api/forge/stream', {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
@@ -206,7 +206,7 @@ export default function ConversationChat({ branch }: ConversationChatProps) {
     });
 
     if (!response.ok || !response.body) {
-      throw new Error('Built-in Forge streaming request could not be started.');
+      throw new Error(`${streamingProvider === 'google-gemini' ? 'Google Gemini' : 'Built-in Forge'} streaming request could not be started.`);
     }
 
     const reader = response.body.getReader();
@@ -214,7 +214,7 @@ export default function ConversationChat({ branch }: ConversationChatProps) {
     let buffer = '';
     let output = '';
 
-    const applyEvent = (event: ForgeStreamEvent) => {
+    const applyEvent = (event: ProviderStreamEvent) => {
       if (event.type === 'token') {
         output += event.token;
         setMessages((current) => current.map((message) => (
@@ -244,7 +244,7 @@ export default function ConversationChat({ branch }: ConversationChatProps) {
           .filter((line) => line.startsWith('data:'))
           .map((line) => line.slice(5).trim())
           .join('');
-        if (data) applyEvent(JSON.parse(data) as ForgeStreamEvent);
+        if (data) applyEvent(JSON.parse(data) as ProviderStreamEvent);
       }
       if (done) break;
     }
@@ -288,8 +288,8 @@ export default function ConversationChat({ branch }: ConversationChatProps) {
       };
       setMessages((current) => [...current, assistant]);
 
-      if (task.status === 'processing' && task.provider === 'built-in-forge') {
-        await streamBuiltInForge({
+      if (task.status === 'processing' && (task.provider === 'built-in-forge' || task.provider === 'google-gemini')) {
+        await streamProvider(task.provider, {
           taskId: task.id,
           assistantMessageId: assistant.id,
           prompt,
@@ -333,7 +333,7 @@ export default function ConversationChat({ branch }: ConversationChatProps) {
               </SelectTrigger>
               <SelectContent>
                 {AI_PROVIDERS.map((item) => (
-                  <SelectItem key={item} value={item}>{item === 'manus' ? 'Manus' : 'Built-in Forge'}</SelectItem>
+                  <SelectItem key={item} value={item}>{item === 'manus' ? 'Manus' : item === 'google-gemini' ? 'Google Gemini' : 'Built-in Forge'}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

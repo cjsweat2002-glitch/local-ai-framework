@@ -1,3 +1,5 @@
+import { ENV } from './_core/env';
+
 const MANUS_API_BASE = 'https://api.manus.ai';
 
 type ManusAgentProfile = 'manus-1.6' | 'manus-1.6-lite' | 'manus-1.6-max';
@@ -144,7 +146,7 @@ export class ManusClient {
   }
 }
 
-export function createManusClient(apiKey = process.env.MANUS_API_KEY || process.env.BUILT_IN_FORGE_API_KEY || '') {
+export function createManusClient(apiKey = ENV.manusApiKey || ENV.forgeApiKey || '') {
   return new ManusClient(apiKey);
 }
 

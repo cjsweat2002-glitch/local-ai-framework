@@ -81,5 +81,5 @@ export const tasks = mysqlTable('tasks', {
 export type Task = typeof tasks.$inferSelect;
 export type InsertTask = typeof tasks.$inferInsert;
 
-export const AI_PROVIDERS = ['manus', 'built-in-forge'] as const;
+export const AI_PROVIDERS = ['manus', 'built-in-forge', 'google-gemini'] as const;
 export type AIProvider = typeof AI_PROVIDERS[number];

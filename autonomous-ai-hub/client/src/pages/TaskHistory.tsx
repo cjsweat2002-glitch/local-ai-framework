@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useLocation } from 'wouter';
+import { providerLabel } from '@/lib/providerLabels';
 
 const STATUS_COLORS: Record<string, string> = {
   queued: 'bg-yellow-100 text-yellow-800',
@@ -49,7 +50,7 @@ export default function TaskHistory() {
                 {tasks.map(task => (
                   <TableRow key={task.id}>
                     <TableCell className="font-medium">{task.branch}</TableCell>
-                    <TableCell>{task.provider === 'built-in-forge' ? 'Built-in Forge' : 'Manus'}</TableCell>
+                    <TableCell>{providerLabel(task.provider)}</TableCell>
                     <TableCell>{task.agentProfile}</TableCell>
                     <TableCell>
                       <Badge className={STATUS_COLORS[task.status] || 'bg-gray-100 text-gray-800'}>

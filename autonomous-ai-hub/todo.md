@@ -26,7 +26,9 @@
 - [x] Add inline task status indicators (queued, processing, completed, failed)
 - [x] Add message input with send button and keyboard shortcut
 - [x] Implement real-time streaming into chat bubbles (token-by-token) through Built-in Forge SSE
-- [ ] Confirm genuine token-level streaming from Manus task events; the currently configured API key cannot retrieve API-created tasks.
+- [x] Clarify Manus as event-polled transport and set Built-in Forge as the default provider for genuine token-level SSE streaming.
+- [x] Update the supplied Manus credential securely and rerun direct create-to-event-retrieval validation with Manus Lite.
+- [x] Confirm a fresh Manus Lite task visibly renders completed output in chat and Task History.
 
 ## Frontend - Pages
 - [x] Update Home.tsx with main chat interface (sidebar + chat area)
@@ -56,8 +58,9 @@
 - [x] Validate Manus API authentication with the configured server-side key
 - [x] Verify Built-in Forge streaming works end-to-end
 - [x] Create checkpoint before first deployment
-- [ ] Deploy to permanent URL
-- [ ] Synchronize the validated project source and deployment architecture diagram to cjsweat2002-glitch/local-ai-framework
+- [x] Deploy to permanent URL: https://autonomaai-btpk72xz.manus.space
+- [x] Synchronize the validated project source and deployment architecture diagram to cjsweat2002-glitch/local-ai-framework through pull request #4.
+- [x] Merge GitHub pull request #4 into master and verify the live deployment remains current.
 
 ## Completed
 - [x] Project initialized with web-db-user scaffold
@@ -68,6 +71,11 @@
 - [x] Replace polling-only output reveal with an explicit Built-in Forge SSE transport
 - [x] Verify contrast and responsive layouts after the CSS repair
 - [x] Mark completed implementation items and save the first project checkpoint
+- [x] Configure a server-side Gemini API credential without exposing it to the browser.
+- [x] Add Google Gemini to the persisted provider model, provider selector, and task routing.
+- [x] Implement Gemini response streaming with durable chat and Task History persistence.
+- [x] Validate Gemini success, error, and ownership paths with Vitest and an authenticated browser flow.
+- [ ] Publish the Gemini-enabled production release and synchronize the source to GitHub.
 
 ## Security and verification follow-ups
 - [x] Add ownership checks to message.add and task.submit so users cannot write to another user's conversation.

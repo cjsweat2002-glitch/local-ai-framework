@@ -131,13 +131,13 @@ export const appRouter = router({
     poll: protectedProcedure
       .input(z.object({
         taskId: z.number(),
-        provider: z.enum(['manus', 'built-in-forge']).default('manus'),
+        provider: z.enum(AI_PROVIDERS).default('manus'),
         manusTaskId: z.string().optional(),
       }))
       .query(async ({ ctx, input }) => {
         try {
           await assertTaskOwner(ctx.user.id, input.taskId);
-          if (input.provider === 'built-in-forge') {
+          if (input.provider === 'built-in-forge' || input.provider === 'google-gemini') {
             return await getTaskSnapshotForUser(ctx.user.id, input.taskId);
           }
           if (!input.manusTaskId) throw new Error('Manus task ID is missing');
@@ -145,8 +145,8 @@ export const appRouter = router({
           return await manus.getSnapshot(input.manusTaskId);
         } catch (error) {
           const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-          const output = /task not found/i.test(errorMsg)
-            ? 'Manus created a task ID but could not retrieve it with the configured API access. Verify that the API key has task-management access, then retry or choose Built-in Forge.'
+          const output = input.provider === 'manus' && /task not found/i.test(errorMsg)
+            ? 'Manus created a task ID but could not retrieve events for the selected profile. Retry with Lite, choose Built-in Forge, or verify that the API key has task-management access.'
             : errorMsg;
           return { status: 'failed', output, isComplete: true };
         }

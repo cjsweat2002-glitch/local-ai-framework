@@ -1,6 +1,6 @@
 import { createManusClient, toManusAgentProfile } from './manus';
 
-export type ProviderName = 'manus' | 'built-in-forge';
+export type ProviderName = 'manus' | 'built-in-forge' | 'google-gemini';
 
 export type ProviderTaskResult = {
   status: 'processing' | 'completed' | 'failed';
