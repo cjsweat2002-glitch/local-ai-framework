@@ -1,0 +1,1 @@
+ALTER TABLE `tasks` ADD `provider` varchar(32) DEFAULT 'manus' NOT NULL;
