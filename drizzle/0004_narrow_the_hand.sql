@@ -1,0 +1,1 @@
+ALTER TABLE `system_nodes` ADD `watcherConsent` boolean DEFAULT false NOT NULL;
