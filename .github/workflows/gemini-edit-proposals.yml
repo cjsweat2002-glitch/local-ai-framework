@@ -49,6 +49,19 @@ jobs:
             {"mcpServers":{"github":{"command":"docker","args":["run","-i","--rm","-e","GITHUB_PERSONAL_ACCESS_TOKEN","ghcr.io/github/github-mcp-server:v0.27.0"],"includeTools":["add_issue_comment","issue_read","pull_request_read","get_file_contents","list_commits","search_code"],"env":{"GITHUB_PERSONAL_ACCESS_TOKEN":"${GITHUB_TOKEN}"}}},"tools":{"core":[]}}
           prompt: /gemini-edit-plan
 
+      - name: Record plan milestone in Activity Pulse
+        continue-on-error: true
+        env:
+          ACTIVITY_PULSE_URL: https://autonomaai-btpk72xz.manus.space
+          ACTIVITY_PULSE_AUDIENCE: autonomous-ai-hub/activity-pulse
+        run: |
+          OIDC_TOKEN="$(curl -fsSL -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${ACTIVITY_PULSE_AUDIENCE}" | jq -r '.value')"
+          curl --fail-with-body --retry 2 --retry-delay 2 \
+            --request POST "${ACTIVITY_PULSE_URL}/api/activity-pulse/github" \
+            --header "Authorization: Bearer ${OIDC_TOKEN}" \
+            --header "Content-Type: application/json" \
+            --data "{\"phase\":\"plan_ready\",\"issueNumber\":${{ github.event.issue.number }},\"runId\":\"${{ github.run_id }}\"}"
+
   apply:
     if: >-
       github.event.sender.type == 'User' &&
@@ -84,3 +97,16 @@ jobs:
           settings: >-
             {"mcpServers":{"github":{"command":"docker","args":["run","-i","--rm","-e","GITHUB_PERSONAL_ACCESS_TOKEN","ghcr.io/github/github-mcp-server:v0.27.0"],"includeTools":["add_issue_comment","issue_read","pull_request_read","get_file_contents","search_code","create_branch","create_or_update_file","create_pull_request"],"env":{"GITHUB_PERSONAL_ACCESS_TOKEN":"${GITHUB_TOKEN}"}}},"tools":{"core":[]}}
           prompt: /gemini-edit-apply
+
+      - name: Record owner approval milestone in Activity Pulse
+        continue-on-error: true
+        env:
+          ACTIVITY_PULSE_URL: https://autonomaai-btpk72xz.manus.space
+          ACTIVITY_PULSE_AUDIENCE: autonomous-ai-hub/activity-pulse
+        run: |
+          OIDC_TOKEN="$(curl -fsSL -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${ACTIVITY_PULSE_AUDIENCE}" | jq -r '.value')"
+          curl --fail-with-body --retry 2 --retry-delay 2 \
+            --request POST "${ACTIVITY_PULSE_URL}/api/activity-pulse/github" \
+            --header "Authorization: Bearer ${OIDC_TOKEN}" \
+            --header "Content-Type: application/json" \
+            --data "{\"phase\":\"approval_received\",\"issueNumber\":${{ github.event.issue.number }},\"runId\":\"${{ github.run_id }}\"}"
