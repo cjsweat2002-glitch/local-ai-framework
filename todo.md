@@ -90,6 +90,16 @@
 - [x] Save the final parity checklist state, synchronize it to GitHub master, and recheck the canonical production System Factory route (checkpoint 12605458; master 670f779).
 - [x] Synchronize the governed System Factory safeguards to GitHub master and confirm the pushed source matches the release (master a4fa933).
 - [x] Apply the user-approved watcher proposal for Interface Differentiation Child and verify its human-approved lineage records.
+- [x] Add a dedicated Gemini development branch with direct code-generation and web-development interaction in the workspace.
+- [x] Assess and implement the supported secure connection workflow for the user’s Gemini notebooks and Gems.
+- [ ] Validate, publish, and synchronize the Gemini developer workspace release.
+- [x] Provide a consumer Gemini notebook and Gem mirror workflow that preserves user-controlled instructions and content without unsupported direct API synchronization.
+- [x] Validate Gemini Developer streaming and persistence with a real in-workspace code or web-development request.
+- [x] Validate the browser mirror flow: save a user-controlled mirror, select it, and confirm it is used as Gemini Developer context.
+- [x] Add regression coverage for the Gemini Developer conversation branch and mirror-backed context contract.
+- [x] Reopen or inspect Task History for the successful Gemini Developer request to confirm the completed stream is persisted.
+- [x] Run a distinctive mirror-only browser validation and verify that the Gemini response reflects the selected private mirror instruction.
+- [x] Verify the successful Gemini Developer task in the browser Task History page with its branch, Google Gemini provider label, completed status, and output preview.
 
 ## Security and verification follow-ups
 - [x] Add ownership checks to message.add and task.submit so users cannot write to another user's conversation.

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { trpc } from '@/lib/trpc';
-import { AGENT_PROFILES, AI_PROVIDERS, BRANCHES, TASK_STATUSES, type AIProvider } from '../../../drizzle/schema';
+import { AGENT_PROFILES, AI_PROVIDERS, CONVERSATION_BRANCHES, TASK_STATUSES, type AIProvider, type ConversationBranch } from '../../../drizzle/schema';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Textarea } from './ui/textarea';
@@ -30,7 +30,9 @@ type ProviderStreamEvent =
   | { type: 'error'; message: string };
 
 interface ConversationChatProps {
-  branch: typeof BRANCHES[number];
+  branch: ConversationBranch;
+  forcedProvider?: AIProvider;
+  developerContext?: string;
 }
 
 function toMessage(message: { id: number; conversationId: number; role: string; content: string; createdAt: Date }): Message {
@@ -41,11 +43,11 @@ function toMessage(message: { id: number; conversationId: number; role: string; 
   };
 }
 
-export default function ConversationChat({ branch }: ConversationChatProps) {
+export default function ConversationChat({ branch, forcedProvider, developerContext }: ConversationChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [agentProfile, setAgentProfile] = useState<typeof AGENT_PROFILES[number]>('Lite');
-  const [provider, setProvider] = useState<AIProvider>('built-in-forge');
+  const [provider, setProvider] = useState<AIProvider>(forcedProvider || 'built-in-forge');
   const [isLoading, setIsLoading] = useState(false);
   const [activeTask, setActiveTask] = useState<ActiveTask | null>(null);
   const [streamTarget, setStreamTarget] = useState<{ messageId: number; content: string } | null>(null);
@@ -68,6 +70,10 @@ export default function ConversationChat({ branch }: ConversationChatProps) {
   const addMessageMutation = trpc.message.add.useMutation();
   const submitTaskMutation = trpc.task.submit.useMutation();
   const syncTaskMutation = trpc.task.sync.useMutation();
+
+  useEffect(() => {
+    if (forcedProvider) setProvider(forcedProvider);
+  }, [forcedProvider]);
 
   const pollInput = useMemo(() => (
     {
@@ -200,6 +206,7 @@ export default function ConversationChat({ branch }: ConversationChatProps) {
         assistantMessageId: input.assistantMessageId,
         branch,
         prompt: input.prompt,
+        developerContext,
         agentProfile,
         conversationHistory: input.conversationHistory,
       }),
@@ -327,7 +334,7 @@ export default function ConversationChat({ branch }: ConversationChatProps) {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <label className="tech-label" htmlFor="provider">Provider:</label>
-            <Select value={provider} onValueChange={(value) => setProvider(value as AIProvider)}>
+            {forcedProvider ? <span className="rounded-md border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-medium text-cyan-950">Google Gemini</span> : <Select value={provider} onValueChange={(value) => setProvider(value as AIProvider)}>
               <SelectTrigger id="provider" className="w-36">
                 <SelectValue />
               </SelectTrigger>
@@ -336,7 +343,7 @@ export default function ConversationChat({ branch }: ConversationChatProps) {
                   <SelectItem key={item} value={item}>{item === 'manus' ? 'Manus' : item === 'google-gemini' ? 'Google Gemini' : 'Built-in Forge'}</SelectItem>
                 ))}
               </SelectContent>
-            </Select>
+            </Select>}
             <label className="tech-label" htmlFor="agent-profile">Agent profile:</label>
             <Select value={agentProfile} onValueChange={(value) => setAgentProfile(value as typeof agentProfile)}>
               <SelectTrigger id="agent-profile" className="w-32">
@@ -386,7 +393,7 @@ export default function ConversationChat({ branch }: ConversationChatProps) {
                 void handleSendMessage();
               }
             }}
-            placeholder={`Describe a ${branch.toLowerCase()} task...`}
+            placeholder={branch === 'Gemini Developer' ? 'Describe the code, component, refactor, or web-development task for Gemini...' : `Describe a ${branch.toLowerCase()} task...`}
             className="min-h-20 resize-none"
             rows={3}
             disabled={isLoading}

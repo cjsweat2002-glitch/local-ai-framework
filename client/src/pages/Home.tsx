@@ -69,6 +69,13 @@ export default function Home() {
             >
               System Factory
             </Button>
+            <Button
+              onClick={() => setLocation('/gemini-developer')}
+              variant="ghost"
+              className="text-sm"
+            >
+              Gemini Dev
+            </Button>
             <div className="hidden text-sm text-muted-foreground sm:block">{user?.name || user?.email}</div>
             <Button
               onClick={logout}

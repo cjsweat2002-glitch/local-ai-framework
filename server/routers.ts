@@ -3,8 +3,8 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
-import { assertConversationOwner, assertTaskOwner, getActiveTaskForConversation, getOrCreateConversation, getConversationWithMessages, getUserConversations, addMessage, updateMessage, createTask, updateTaskStatus, getTaskSnapshotForUser, getUserTasks, createProviderMarketSignal, createSystemNode, createTensorExchange, createWatcherProposal, getSystemNodeForUser, listProviderMarketSignals, listSystemAuditEvents, listSystemNodes, listTensorExchanges, listWatcherProposals, resolveWatcherProposal, updateSystemWatcherConsent } from "./db";
-import { AI_PROVIDERS, BRANCHES, AGENT_PROFILES } from "../drizzle/schema";
+import { assertConversationOwner, assertTaskOwner, getActiveTaskForConversation, getOrCreateConversation, getConversationWithMessages, getUserConversations, addMessage, updateMessage, createTask, updateTaskStatus, getTaskSnapshotForUser, getUserTasks, createGeminiMirror, createProviderMarketSignal, createSystemNode, createTensorExchange, createWatcherProposal, deleteGeminiMirror, getSystemNodeForUser, listGeminiMirrors, listProviderMarketSignals, listSystemAuditEvents, listSystemNodes, listTensorExchanges, listWatcherProposals, resolveWatcherProposal, updateSystemWatcherConsent } from "./db";
+import { AI_PROVIDERS, CONVERSATION_BRANCHES, AGENT_PROFILES } from "../drizzle/schema";
 import { createManusClient } from "./manus";
 import { submitToProvider } from "./providers";
 
@@ -28,7 +28,7 @@ export const appRouter = router({
       return await getUserConversations(ctx.user.id);
     }),
     getOrCreate: protectedProcedure
-      .input(z.object({ branch: z.enum(BRANCHES) }))
+      .input(z.object({ branch: z.enum(CONVERSATION_BRANCHES) }))
       .query(async ({ ctx, input }) => {
         return await getOrCreateConversation(ctx.user.id, input.branch);
       }),
@@ -60,7 +60,7 @@ export const appRouter = router({
     submit: protectedProcedure
       .input(z.object({
         conversationId: z.number(),
-        branch: z.enum(BRANCHES),
+        branch: z.enum(CONVERSATION_BRANCHES),
         agentProfile: z.enum(AGENT_PROFILES),
         provider: z.enum(AI_PROVIDERS).default('manus'),
         prompt: z.string(),
@@ -150,6 +150,32 @@ export const appRouter = router({
             : errorMsg;
           return { status: 'failed', output, isComplete: true };
         }
+      }),
+  }),
+
+  geminiWorkspace: router({
+    listMirrors: protectedProcedure.query(async ({ ctx }) => {
+      return await listGeminiMirrors(ctx.user.id);
+    }),
+
+    createMirror: protectedProcedure
+      .input(z.object({
+        kind: z.enum(['gem-blueprint', 'notebook-mirror']),
+        name: z.string().min(2).max(128),
+        instructions: z.string().max(16000).optional(),
+        notebookContent: z.string().max(40000).optional(),
+        sourceUrl: z.string().url().max(1024).optional(),
+      }).refine((value) => Boolean(value.instructions?.trim() || value.notebookContent?.trim()), {
+        message: 'Paste the Gem instructions or notebook content to create a mirror.',
+      }))
+      .mutation(async ({ ctx, input }) => {
+        return await createGeminiMirror(ctx.user.id, input);
+      }),
+
+    deleteMirror: protectedProcedure
+      .input(z.object({ mirrorId: z.number().int().positive() }))
+      .mutation(async ({ ctx, input }) => {
+        return await deleteGeminiMirror(ctx.user.id, input.mirrorId);
       }),
   }),
 

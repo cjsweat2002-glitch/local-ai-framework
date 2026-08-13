@@ -1,6 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, conversations, messages, tasks, systemNodes, tensorExchanges, providerMarketSignals, watcherProposals, systemAuditEvents } from "../drizzle/schema";
+import { InsertUser, users, conversations, messages, tasks, geminiMirrors, systemNodes, tensorExchanges, providerMarketSignals, watcherProposals, systemAuditEvents } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import { assertGovernedCooldown, assertWatcherReviewEligibility, GOVERNANCE_COOLDOWNS } from './governancePolicy';
 
@@ -280,6 +280,43 @@ export async function getActiveTaskForConversation(userId: number, conversationI
     .orderBy(desc(messages.createdAt))
     .limit(1);
   return { task, assistantMessageId: assistantMessages[0]?.id || null };
+}
+
+// Consumer Gemini content is mirrored only when deliberately supplied by the owner.
+export async function listGeminiMirrors(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  return await db.select().from(geminiMirrors)
+    .where(eq(geminiMirrors.userId, userId))
+    .orderBy(desc(geminiMirrors.updatedAt));
+}
+
+export async function createGeminiMirror(userId: number, input: {
+  kind: 'gem-blueprint' | 'notebook-mirror';
+  name: string;
+  instructions?: string;
+  notebookContent?: string;
+  sourceUrl?: string;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  const result = await db.insert(geminiMirrors).values({
+    userId,
+    kind: input.kind,
+    name: input.name,
+    instructions: input.instructions || null,
+    notebookContent: input.notebookContent || null,
+    sourceUrl: input.sourceUrl || null,
+  });
+  const id = getInsertId(result);
+  return { id, userId, ...input, createdAt: new Date(), updatedAt: new Date() };
+}
+
+export async function deleteGeminiMirror(userId: number, mirrorId: number) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  await db.delete(geminiMirrors).where(and(eq(geminiMirrors.id, mirrorId), eq(geminiMirrors.userId, userId)));
+  return { success: true } as const;
 }
 
 // Governed parent–child system helpers. Every record is scoped to the signed-in owner.

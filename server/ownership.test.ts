@@ -14,6 +14,8 @@ const dbMocks = vi.hoisted(() => ({
   getActiveTaskForConversation: vi.fn(),
   getTaskSnapshotForUser: vi.fn(),
   getUserTasks: vi.fn(),
+  createGeminiMirror: vi.fn(),
+  deleteGeminiMirror: vi.fn(),
   createProviderMarketSignal: vi.fn(),
   createSystemNode: vi.fn(),
   createTensorExchange: vi.fn(),
@@ -24,6 +26,7 @@ const dbMocks = vi.hoisted(() => ({
   listSystemNodes: vi.fn(),
   listTensorExchanges: vi.fn(),
   listWatcherProposals: vi.fn(),
+  listGeminiMirrors: vi.fn(),
   resolveWatcherProposal: vi.fn(),
   updateSystemWatcherConsent: vi.fn(),
 }));
@@ -67,6 +70,15 @@ describe('conversation write isolation', () => {
     await expect(caller.message.add({ conversationId: 9001, role: 'user', content: 'restricted' }))
       .rejects.toThrow('Conversation not found');
     expect(dbMocks.addMessage).not.toHaveBeenCalled();
+  });
+
+  it('creates the dedicated Gemini Developer conversation under the signed-in owner', async () => {
+    dbMocks.getOrCreateConversation.mockResolvedValueOnce({ id: 71, userId: 22, branch: 'Gemini Developer' });
+    const caller = appRouter.createCaller(createContext());
+
+    await expect(caller.conversation.getOrCreate({ branch: 'Gemini Developer' }))
+      .resolves.toMatchObject({ id: 71, userId: 22, branch: 'Gemini Developer' });
+    expect(dbMocks.getOrCreateConversation).toHaveBeenCalledWith(22, 'Gemini Developer');
   });
 
   it('rejects a task submission before creating a task when the conversation is not owned', async () => {
@@ -134,6 +146,29 @@ describe('conversation write isolation', () => {
 
     expect(result).toMatchObject({ status: 'failed', isComplete: true, output: 'Task not found' });
     expect(dbMocks.getTaskSnapshotForUser).not.toHaveBeenCalled();
+  });
+
+  it('scopes Gemini mirror creation and listing to the signed-in owner', async () => {
+    dbMocks.createGeminiMirror.mockResolvedValueOnce({ id: 7, userId: 22, name: 'Frontend Gem' });
+    dbMocks.listGeminiMirrors.mockResolvedValueOnce([{ id: 7, userId: 22, name: 'Frontend Gem' }]);
+    const caller = appRouter.createCaller(createContext());
+
+    await expect(caller.geminiWorkspace.createMirror({
+      kind: 'gem-blueprint',
+      name: 'Frontend Gem',
+      instructions: 'Use accessible React patterns.',
+    })).resolves.toMatchObject({ id: 7, userId: 22 });
+    await expect(caller.geminiWorkspace.listMirrors()).resolves.toEqual([{ id: 7, userId: 22, name: 'Frontend Gem' }]);
+    expect(dbMocks.createGeminiMirror).toHaveBeenCalledWith(22, expect.objectContaining({ name: 'Frontend Gem' }));
+    expect(dbMocks.listGeminiMirrors).toHaveBeenCalledWith(22);
+  });
+
+  it('routes Gemini mirror removal through the signed-in owner identity', async () => {
+    dbMocks.deleteGeminiMirror.mockResolvedValueOnce({ success: true });
+    const caller = appRouter.createCaller(createContext());
+
+    await expect(caller.geminiWorkspace.deleteMirror({ mirrorId: 7 })).resolves.toEqual({ success: true });
+    expect(dbMocks.deleteGeminiMirror).toHaveBeenCalledWith(22, 7);
   });
 
   it('does not create a watcher proposal when the requested child is not owned', async () => {

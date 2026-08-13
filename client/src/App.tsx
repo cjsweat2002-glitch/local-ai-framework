@@ -5,6 +5,7 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+import GeminiDeveloper from "./pages/GeminiDeveloper";
 import SystemFactory from "./pages/SystemFactory";
 import TaskHistory from "./pages/TaskHistory";
 
@@ -15,6 +16,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/task-history" component={TaskHistory} />
       <Route path="/system-factory" component={SystemFactory} />
+      <Route path="/gemini-developer" component={GeminiDeveloper} />
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

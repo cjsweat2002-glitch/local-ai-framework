@@ -35,6 +35,12 @@ export const BRANCHES = [
   'Research'
 ] as const;
 
+// The six orchestration branches remain fixed. Gemini Developer is a separate,
+// provider-specific workspace with its own persistent conversation history.
+export const GEMINI_DEVELOPER_BRANCH = 'Gemini Developer' as const;
+export const CONVERSATION_BRANCHES = [...BRANCHES, GEMINI_DEVELOPER_BRANCH] as const;
+export type ConversationBranch = typeof CONVERSATION_BRANCHES[number];
+
 export const AGENT_PROFILES = ['Standard', 'Lite', 'Max'] as const;
 
 export const TASK_STATUSES = ['queued', 'processing', 'completed', 'failed'] as const;
@@ -80,6 +86,23 @@ export const tasks = mysqlTable('tasks', {
 
 export type Task = typeof tasks.$inferSelect;
 export type InsertTask = typeof tasks.$inferInsert;
+
+// User-controlled mirrors of consumer Gemini notebook content and Gem instructions.
+// Consumer Gemini has no supported API for direct synchronization, so records are
+// created only from information deliberately supplied by the owner in the workspace.
+export const geminiMirrors = mysqlTable('gemini_mirrors', {
+  id: int('id').autoincrement().primaryKey(),
+  userId: int('userId').notNull(),
+  kind: varchar('kind', { length: 24 }).notNull(), // gem-blueprint | notebook-mirror
+  name: varchar('name', { length: 128 }).notNull(),
+  instructions: text('instructions'),
+  notebookContent: text('notebookContent'),
+  sourceUrl: varchar('sourceUrl', { length: 1024 }),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt').defaultNow().onUpdateNow().notNull(),
+});
+
+export type GeminiMirror = typeof geminiMirrors.$inferSelect;
 
 export const AI_PROVIDERS = ['manus', 'built-in-forge', 'google-gemini'] as const;
 export type AIProvider = typeof AI_PROVIDERS[number];
