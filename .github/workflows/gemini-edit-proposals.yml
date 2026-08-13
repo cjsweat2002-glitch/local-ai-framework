@@ -24,6 +24,7 @@ jobs:
       contents: read
       issues: write
       pull-requests: write
+      id-token: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -36,7 +37,11 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           GEMINI_CLI_TRUST_WORKSPACE: "true"
         with:
-          gemini_api_key: ${{ secrets.GEMINI_API }}
+          use_vertex_ai: 'true'
+          gcp_project_id: ${{ vars.GOOGLE_CLOUD_PROJECT }}
+          gcp_location: ${{ vars.GOOGLE_CLOUD_LOCATION }}
+          gcp_service_account: ${{ vars.SERVICE_ACCOUNT_EMAIL }}
+          gcp_workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
           github_pr_number: ${{ github.event.issue.pull_request && github.event.issue.number || '' }}
           github_issue_number: ${{ github.event.issue.number }}
           workflow_name: gemini-edit-plan
@@ -55,6 +60,7 @@ jobs:
       contents: write
       issues: write
       pull-requests: write
+      id-token: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -67,7 +73,11 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           GEMINI_CLI_TRUST_WORKSPACE: "true"
         with:
-          gemini_api_key: ${{ secrets.GEMINI_API }}
+          use_vertex_ai: 'true'
+          gcp_project_id: ${{ vars.GOOGLE_CLOUD_PROJECT }}
+          gcp_location: ${{ vars.GOOGLE_CLOUD_LOCATION }}
+          gcp_service_account: ${{ vars.SERVICE_ACCOUNT_EMAIL }}
+          gcp_workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
           github_pr_number: ${{ github.event.issue.pull_request && github.event.issue.number || '' }}
           github_issue_number: ${{ github.event.issue.number }}
           workflow_name: gemini-edit-apply
