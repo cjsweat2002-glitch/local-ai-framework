@@ -1,6 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, conversations, messages, tasks, geminiMirrors, systemNodes, tensorExchanges, providerMarketSignals, watcherProposals, systemAuditEvents } from "../drizzle/schema";
+import { InsertUser, users, conversations, messages, tasks, geminiMirrors, systemNodes, tensorExchanges, providerMarketSignals, watcherProposals, systemAuditEvents, developmentActivities } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import { assertGovernedCooldown, assertWatcherReviewEligibility, GOVERNANCE_COOLDOWNS } from './governancePolicy';
 
@@ -584,4 +584,36 @@ export async function resolveWatcherProposal(userId: number, proposalId: number,
   }
   await createSystemAuditEvent(userId, `watcher.${decision}`, 'watcher_proposal', proposal.id, proposal.title);
   return { success: true } as const;
+}
+
+// Development activity pulse helpers. Entries are always owner-isolated and
+// fetched by the browser only while its activity page is open.
+export async function createDevelopmentActivity(userId: number, input: {
+  kind: 'development' | 'interface' | 'decision' | 'warning' | 'task';
+  level: 'info' | 'success' | 'warning';
+  title: string;
+  detail: string;
+  source?: string;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  const result = await db.insert(developmentActivities).values({
+    userId,
+    kind: input.kind,
+    level: input.level,
+    title: input.title,
+    detail: input.detail,
+    source: input.source || 'workspace',
+  });
+  const id = getInsertId(result);
+  return { id, userId, ...input, source: input.source || 'workspace', createdAt: new Date() };
+}
+
+export async function listDevelopmentActivities(userId: number, limit = 60) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  return await db.select().from(developmentActivities)
+    .where(eq(developmentActivities.userId, userId))
+    .orderBy(desc(developmentActivities.createdAt))
+    .limit(limit);
 }

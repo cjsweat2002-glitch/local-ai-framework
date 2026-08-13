@@ -188,3 +188,18 @@ export const systemAuditEvents = mysqlTable('system_audit_events', {
 });
 
 export type SystemAuditEvent = typeof systemAuditEvents.$inferSelect;
+
+// Retained activity feed for owner-scoped interface and development updates.
+// Entries are delivered by normal authenticated requests; no always-on worker is required.
+export const developmentActivities = mysqlTable('development_activities', {
+  id: int('id').autoincrement().primaryKey(),
+  userId: int('userId').notNull(),
+  kind: varchar('kind', { length: 32 }).notNull(), // development | interface | decision | warning | task
+  level: varchar('level', { length: 16 }).notNull().default('info'), // info | success | warning
+  title: varchar('title', { length: 180 }).notNull(),
+  detail: text('detail').notNull(),
+  source: varchar('source', { length: 48 }).notNull().default('workspace'),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+});
+
+export type DevelopmentActivity = typeof developmentActivities.$inferSelect;

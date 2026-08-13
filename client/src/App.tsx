@@ -9,6 +9,7 @@ import GeminiDeveloper from "./pages/GeminiDeveloper";
 import DesignStudio from "./pages/DesignStudio";
 import SystemFactory from "./pages/SystemFactory";
 import TaskHistory from "./pages/TaskHistory";
+import ActivityPulse from "./pages/ActivityPulse";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/system-factory" component={SystemFactory} />
       <Route path="/gemini-developer" component={GeminiDeveloper} />
       <Route path="/design-studio" component={DesignStudio} />
+      <Route path="/activity-pulse" component={ActivityPulse} />
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

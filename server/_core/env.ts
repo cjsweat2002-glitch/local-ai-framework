@@ -9,4 +9,5 @@ export const ENV = {
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
   manusApiKey: process.env.MANUS_API_KEY ?? "",
   geminiApiKey: process.env.GEMINI_API_KEY ?? "",
+  activityPulseOidcAudience: process.env.ACTIVITY_PULSE_OIDC_AUDIENCE ?? "autonomous-ai-hub/activity-pulse",
 };
