@@ -155,3 +155,40 @@
 - [x] Add a discoverable shortcut settings panel with command descriptions and editable step-size preferences.
 - [x] Implement focus-safe keyboard handling that never intercepts ordinary typing in text and form fields.
 - [x] Verify keyboard commands, focus behavior, and shortcut settings through regression and browser interaction tests.
+
+## Four-Dimensional Spatial Engine
+- [x] Create an exported spatialEngine utility with 4D rotation, 4D-to-3D perspective projection, hyperspherical conversion, and metric-tensor interval calculations.
+- [x] Add mathematical regression coverage for normal, simultaneous-plane rotation, projection singularity, hyperspherical, and metric-tensor cases.
+- [x] Verify TypeScript and publish the standalone spatial engine.
+- [x] Save and publish a checkpoint that includes the verified spatial engine utility and regression coverage.
+
+## Advanced Frontend Kernel v2
+- [x] Add the core DAG engine with acyclic-graph validation and render-cost stability analysis.
+- [x] Add the SSM preloader with typed state-space stepping and continuous-to-discrete coefficient helpers.
+- [x] Establish typed spatial-mapping, molecular-forge, snowflake-geometry, and tRPC-boundary domain modules.
+- [x] Add kernel regression coverage and verify TypeScript.
+- [x] Publish the verified advanced frontend kernel release.
+
+## Dev–Consumer Bridge
+- [x] Add the omni objective, side-by-side divergence metric, and supplied operating-parameter defaults.
+- [x] Add target-budget evaluation for development memory ratio and consumer latency.
+- [x] Add regression coverage and verify TypeScript.
+- [x] Publish the verified Dev–Consumer Bridge release.
+
+## Creative Workspace Options & Development Notifications
+- [x] Translate the research into original contextual options, dockable-inspector, workspace-mode, and status-feedback requirements for the Design Studio.
+- [x] Select and implement a development-notification architecture appropriate to the intended local workflow.
+- [x] Validate the interface enhancements through direct browser interaction, including Focus and Preview canvas workspace modes.
+- [x] Publish the research-informed interface and activity-pulse release.
+
+## No-Cost Cloud Activity Pulse
+- [x] Add owner-isolated development activity records and protected tRPC procedures for creating and listing site events.
+- [x] Build a live in-site activity-pulse page with retained entries and browser-open polling pings, without an always-on worker.
+- [x] Validate the activity pulse through a real owner activity record, immediate stream refresh, and visible in-site ping.
+- [x] Publish the no-cost cloud activity-pulse release.
+
+## Secure Gemini Proposal Activity Stream
+- [x] Review the guarded Gemini workflow and define non-sensitive proposal lifecycle events for Activity Pulse.
+- [x] Add a repository-safe workflow handoff that records Gemini proposal milestones without browser cookies, direct deployment, or secret exposure.
+- [x] Add documentation and regression coverage, then validate the secure Gemini proposal activity stream.
+- [ ] Publish the secure Gemini proposal activity stream and synchronize the guarded workflow to GitHub.

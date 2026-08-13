@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Aperture, Download, Image as ImageIcon, Keyboard, Layers3, Redo2, Square, Type, Undo2 } from 'lucide-react';
+import { Aperture, Download, Eye, Focus, Image as ImageIcon, Keyboard, Layers3, Redo2, SlidersHorizontal, Square, Type, Undo2 } from 'lucide-react';
 import { applyTemplate, CANVAS_TEMPLATES, createLayer, initialCanvas, PALETTE_PRESETS, serializeDesign, type CanvasLayer, type CanvasLayerKind, type CanvasTemplate } from '@/lib/designCanvas';
 
 type CanvasState = ReturnType<typeof initialCanvas>;
@@ -24,6 +24,7 @@ export default function DesignCanvas({ onOpenAdvisor }: { onOpenAdvisor: () => v
   const [commandsEnabled, setCommandsEnabled] = useState(() => typeof window === 'undefined' ? true : window.localStorage.getItem('canvas-commands-enabled') !== 'false');
   const [nudgeStep, setNudgeStep] = useState(() => typeof window === 'undefined' ? 2 : Number(window.localStorage.getItem('canvas-nudge-step') || 2));
   const [lastCommand, setLastCommand] = useState('Canvas ready');
+  const [workspaceMode, setWorkspaceMode] = useState<'compose' | 'focus' | 'preview'>('compose');
   const stageRef = useRef<HTMLDivElement>(null);
   const designRef = useRef(design);
   const dragRef = useRef<{ layerId: string; startClientX: number; startClientY: number; originX: number; originY: number; width: number; height: number } | null>(null);
@@ -189,11 +190,18 @@ export default function DesignCanvas({ onOpenAdvisor }: { onOpenAdvisor: () => v
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [commandsEnabled, design, nudgeStep, selectedLayer, selectedLayerId]);
 
-  return <section className="design-workbench" aria-label="Interactive design canvas">
+  const centerSelected = () => {
+    if (!selectedLayer) return;
+    updateLayer({ x: Math.max(0, Math.round((100 - selectedLayer.width) / 2)), y: Math.max(0, Math.round((100 - selectedLayer.height) / 2)) });
+    setLastCommand(`Centered ${selectedLayer.name}`);
+  };
+
+  return <section className={`design-workbench design-workbench--${workspaceMode}`} aria-label="Interactive design canvas">
     <div className="design-workbench__toolbar">
       <div className="flex flex-wrap items-center gap-2"><span className="signal-pill"><span className="signal-dot" />Hands-on canvas</span><span className="tech-label">Direct composition tools</span></div>
-      <div className="flex flex-wrap items-center gap-1.5"><Button type="button" variant="outline" className="canvas-tool" onClick={() => setShortcutsOpen((open) => !open)} aria-expanded={shortcutsOpen} aria-controls="canvas-shortcuts"><Keyboard className="h-3.5 w-3.5" />Shortcuts</Button><Button type="button" variant="outline" className="canvas-tool" onClick={undo} disabled={!history.length} aria-label="Undo last canvas change"><Undo2 className="h-3.5 w-3.5" />Undo</Button><Button type="button" variant="outline" className="canvas-tool" onClick={redo} disabled={!future.length} aria-label="Redo canvas change"><Redo2 className="h-3.5 w-3.5" />Redo</Button><Button type="button" className="btn-primary canvas-tool" onClick={downloadSpec}><Download className="h-3.5 w-3.5" />Export spec</Button></div>
+      <div className="flex flex-wrap items-center gap-1.5"><div className="workspace-mode-switch" role="group" aria-label="Canvas workspace mode"><Button type="button" variant="ghost" className={`canvas-tool ${workspaceMode === 'compose' ? 'canvas-tool--active' : ''}`} onClick={() => setWorkspaceMode('compose')} aria-pressed={workspaceMode === 'compose'}><SlidersHorizontal className="h-3.5 w-3.5" />Compose</Button><Button type="button" variant="ghost" className={`canvas-tool ${workspaceMode === 'focus' ? 'canvas-tool--active' : ''}`} onClick={() => setWorkspaceMode('focus')} aria-pressed={workspaceMode === 'focus'}><Focus className="h-3.5 w-3.5" />Focus</Button><Button type="button" variant="ghost" className={`canvas-tool ${workspaceMode === 'preview' ? 'canvas-tool--active' : ''}`} onClick={() => setWorkspaceMode('preview')} aria-pressed={workspaceMode === 'preview'}><Eye className="h-3.5 w-3.5" />Preview</Button></div><Button type="button" variant="outline" className="canvas-tool" onClick={() => setShortcutsOpen((open) => !open)} aria-expanded={shortcutsOpen} aria-controls="canvas-shortcuts"><Keyboard className="h-3.5 w-3.5" />Shortcuts</Button><Button type="button" variant="outline" className="canvas-tool" onClick={undo} disabled={!history.length} aria-label="Undo last canvas change"><Undo2 className="h-3.5 w-3.5" />Undo</Button><Button type="button" variant="outline" className="canvas-tool" onClick={redo} disabled={!future.length} aria-label="Redo last canvas change"><Redo2 className="h-3.5 w-3.5" />Redo</Button><Button type="button" className="btn-primary canvas-tool" onClick={downloadSpec}><Download className="h-3.5 w-3.5" />Export spec</Button></div>
     </div>
+    {selectedLayer && workspaceMode !== 'preview' && <div className="canvas-context-strip" aria-label="Active layer options"><div><p className="tech-label">Active selection</p><div className="flex flex-wrap items-center gap-2"><strong>{selectedLayer.name}</strong><span>{layerLabel(selectedLayer.kind)}</span></div></div><div className="canvas-context-strip__controls"><label><span>X</span><input type="number" min="0" max="100" value={Math.round(selectedLayer.x)} onChange={(event) => updateLayer({ x: Number(event.target.value) })} /></label><label><span>Y</span><input type="number" min="0" max="100" value={Math.round(selectedLayer.y)} onChange={(event) => updateLayer({ y: Number(event.target.value) })} /></label><label><span>Rotate</span><input type="number" min="-180" max="180" value={Math.round(selectedLayer.rotation)} onChange={(event) => updateLayer({ rotation: Number(event.target.value) })} /></label><Button type="button" variant="outline" className="canvas-tool" onClick={centerSelected}>Center layer</Button></div></div>}
     {shortcutsOpen && <div id="canvas-shortcuts" className="shortcut-dock"><div><p className="tech-label">Canvas commands</p><h3 className="blueprint-headline mt-1 text-2xl">Stay in the composition.</h3><p className="mt-1 text-sm text-muted-foreground">Commands pause automatically while you are typing in any field. Tab remains available for normal focus navigation.</p></div><div className="shortcut-dock__commands"><span><kbd>← ↑ ↓ →</kbd>Move layer</span><span><kbd>Shift + arrows</kbd>Large move</span><span><kbd>[ / ]</kbd>Previous / next layer</span><span><kbd>⌘/Ctrl + D</kbd>Duplicate</span><span><kbd>Delete</kbd>Remove</span><span><kbd>T / S / I</kbd>Add text / shape / image</span><span><kbd>⌘/Ctrl + Z</kbd>Undo</span><span><kbd>E</kbd>Export spec</span></div><div className="shortcut-dock__settings"><label><span>Enable commands</span><input type="checkbox" checked={commandsEnabled} onChange={(event) => setCommandsEnabled(event.target.checked)} /></label><label><span>Nudge step <strong>{nudgeStep}%</strong></span><input type="range" min="1" max="10" value={nudgeStep} onChange={(event) => setNudgeStep(Number(event.target.value))} /></label></div></div>}
 
     <div className="design-workbench__body">

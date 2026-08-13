@@ -3,7 +3,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
-import { assertConversationOwner, assertTaskOwner, getActiveTaskForConversation, getOrCreateConversation, getConversationWithMessages, getUserConversations, addMessage, updateMessage, createTask, updateTaskStatus, getTaskSnapshotForUser, getUserTasks, createGeminiMirror, createProviderMarketSignal, createSystemNode, createTensorExchange, createWatcherProposal, deleteGeminiMirror, getSystemNodeForUser, listGeminiMirrors, listProviderMarketSignals, listSystemAuditEvents, listSystemNodes, listTensorExchanges, listWatcherProposals, resolveWatcherProposal, updateSystemWatcherConsent } from "./db";
+import { assertConversationOwner, assertTaskOwner, getActiveTaskForConversation, getOrCreateConversation, getConversationWithMessages, getUserConversations, addMessage, updateMessage, createTask, updateTaskStatus, getTaskSnapshotForUser, getUserTasks, createGeminiMirror, createProviderMarketSignal, createSystemNode, createTensorExchange, createWatcherProposal, createDevelopmentActivity, deleteGeminiMirror, getSystemNodeForUser, listDevelopmentActivities, listGeminiMirrors, listProviderMarketSignals, listSystemAuditEvents, listSystemNodes, listTensorExchanges, listWatcherProposals, resolveWatcherProposal, updateSystemWatcherConsent } from "./db";
 import { AI_PROVIDERS, CONVERSATION_BRANCHES, AGENT_PROFILES } from "../drizzle/schema";
 import { createManusClient } from "./manus";
 import { submitToProvider } from "./providers";
@@ -69,6 +69,17 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         await assertConversationOwner(ctx.user.id, input.conversationId);
         const task = await createTask(ctx.user.id, input.conversationId, input.branch, input.agentProfile, input.provider);
+        try {
+          await createDevelopmentActivity(ctx.user.id, {
+            kind: 'task',
+            level: 'info',
+            title: `Task routed through ${input.provider}`,
+            detail: `${input.branch} is preparing a ${input.agentProfile} task. The Activity Pulse will retain status signals while its page is open.`,
+            source: 'task-router',
+          });
+        } catch (activityError) {
+          console.warn('[ActivityPulse] Could not record task start:', activityError);
+        }
         
         try {
           const history = (input.conversationHistory || [])
@@ -91,10 +102,32 @@ export const appRouter = router({
           }
 
           await updateTaskStatus(task.id, providerResult.status, undefined, providerResult.output || providerResult.error);
+          try {
+            await createDevelopmentActivity(ctx.user.id, {
+              kind: 'task',
+              level: providerResult.status === 'completed' ? 'success' : 'warning',
+              title: `Task ${providerResult.status}`,
+              detail: `${input.branch} returned an immediate ${providerResult.status} result through ${input.provider}.`,
+              source: 'task-router',
+            });
+          } catch (activityError) {
+            console.warn('[ActivityPulse] Could not record task result:', activityError);
+          }
           return { ...task, status: providerResult.status, output: providerResult.output || providerResult.error };
         } catch (error) {
           const errorMsg = error instanceof Error ? error.message : 'Unknown error';
           await updateTaskStatus(task.id, 'failed', undefined, errorMsg);
+          try {
+            await createDevelopmentActivity(ctx.user.id, {
+              kind: 'task',
+              level: 'warning',
+              title: 'Task route needs attention',
+              detail: `${input.branch} could not complete through ${input.provider}: ${errorMsg}`,
+              source: 'task-router',
+            });
+          } catch (activityError) {
+            console.warn('[ActivityPulse] Could not record task failure:', activityError);
+          }
           return { ...task, status: 'failed', output: errorMsg };
         }
       }),
@@ -124,6 +157,19 @@ export const appRouter = router({
         await updateTaskStatus(input.taskId, input.status, undefined, input.output || undefined);
         if (input.output) {
           await updateMessage(ctx.user.id, input.conversationId, input.assistantMessageId, input.output);
+        }
+        if (input.status === 'completed' || input.status === 'failed') {
+          try {
+            await createDevelopmentActivity(ctx.user.id, {
+              kind: 'task',
+              level: input.status === 'completed' ? 'success' : 'warning',
+              title: `Task ${input.status}`,
+              detail: `A streamed task completed its synchronization cycle with ${input.status} status.`,
+              source: 'task-sync',
+            });
+          } catch (activityError) {
+            console.warn('[ActivityPulse] Could not record task synchronization:', activityError);
+          }
         }
         return { success: true } as const;
       }),
@@ -176,6 +222,26 @@ export const appRouter = router({
       .input(z.object({ mirrorId: z.number().int().positive() }))
       .mutation(async ({ ctx, input }) => {
         return await deleteGeminiMirror(ctx.user.id, input.mirrorId);
+      }),
+  }),
+
+  activityPulse: router({
+    list: protectedProcedure
+      .input(z.object({ limit: z.number().int().min(1).max(100).optional() }).optional())
+      .query(async ({ ctx, input }) => {
+        return await listDevelopmentActivities(ctx.user.id, input?.limit ?? 60);
+      }),
+
+    record: protectedProcedure
+      .input(z.object({
+        kind: z.enum(['development', 'interface', 'decision', 'warning', 'task']),
+        level: z.enum(['info', 'success', 'warning']).default('info'),
+        title: z.string().trim().min(3).max(180),
+        detail: z.string().trim().min(3).max(4000),
+        source: z.string().trim().min(2).max(48).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        return await createDevelopmentActivity(ctx.user.id, input);
       }),
   }),
 

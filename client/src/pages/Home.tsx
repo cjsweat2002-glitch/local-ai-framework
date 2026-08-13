@@ -99,6 +99,13 @@ export default function Home() {
               Task History
             </Button>
             <Button
+              onClick={() => setLocation('/activity-pulse')}
+              variant="ghost"
+              className="nav-sector"
+            >
+              Activity Pulse
+            </Button>
+            <Button
               onClick={() => setLocation('/system-factory')}
               variant="ghost"
               className="nav-sector"
