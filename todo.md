@@ -108,6 +108,10 @@
 - [x] Add a guarded Gemini CLI workflow that responds only to Gemini requests in issues and pull requests and never deploys directly.
 - [x] Extend the guarded Gemini workflow to support owner-approved requests in pull-request comments as well as issues, then validate both trigger paths.
 - [ ] Verify the guarded Gemini workflow end-to-end from one issue comment and one pull-request comment, confirming plan-first behavior and no deployment action.
+- [ ] Replace the invalid `GEMINI_API` GitHub Actions secret with a valid Google AI Studio Gemini API key and re-run the non-destructive planning validation.
+- [x] Replace the rejected consumer-key workflow authentication with Google Cloud Vertex identity authentication.
+- [x] Configure Google Cloud Workload Identity Federation for the repository and grant the guarded Gemini workflow least-privilege Vertex access.
+- [x] Preserve the guarded Vertex configuration inactive after the billing-gated validation, pending the owner's future decision to enable billing.
 
 ## Security and verification follow-ups
 - [x] Add ownership checks to message.add and task.submit so users cannot write to another user's conversation.
