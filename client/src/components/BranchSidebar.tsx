@@ -1,14 +1,15 @@
 import React from 'react';
+import { ChartNoAxesCombined, Code2, Orbit, Palette, PenLine, Search, Sparkles, Workflow } from 'lucide-react';
 import { BRANCHES } from '../../../drizzle/schema';
 import { Button } from './ui/button';
 
-const BRANCH_ICONS: Record<typeof BRANCHES[number], string> = {
-  'Code Generation': '💻',
-  'Content Creation': '✍️',
-  'Data Analysis': '📊',
-  'Automation': '⚙️',
-  'Design & UI': '🎨',
-  'Research': '🔍',
+const BRANCH_META: Record<typeof BRANCHES[number], { icon: typeof Code2; caption: string; accent: string; marker: string }> = {
+  'Code Generation': { icon: Code2, caption: 'Write & refactor', accent: '01', marker: 'code' },
+  'Content Creation': { icon: PenLine, caption: 'Draft & edit', accent: '02', marker: 'content' },
+  'Data Analysis': { icon: ChartNoAxesCombined, caption: 'Process & visualize', accent: '03', marker: 'data' },
+  'Automation': { icon: Workflow, caption: 'Design workflows', accent: '04', marker: 'automation' },
+  'Design & UI': { icon: Palette, caption: 'Create visuals', accent: '05', marker: 'design' },
+  'Research': { icon: Search, caption: 'Gather insights', accent: '06', marker: 'research' },
 };
 
 interface BranchSidebarProps {
@@ -18,48 +19,59 @@ interface BranchSidebarProps {
 
 export default function BranchSidebar({ selectedBranch, onSelectBranch }: BranchSidebarProps) {
   return (
-    <div className="w-64 bg-card border-r border-border flex flex-col h-full">
-      {/* Header */}
-      <div className="p-6 border-b border-border">
-        <h1 className="blueprint-headline text-2xl mb-1">Autonomous</h1>
-        <h2 className="blueprint-headline text-2xl text-accent mb-3">AI Hub</h2>
-        <p className="tech-label text-xs">Task Orchestration Platform</p>
-      </div>
-
-      {/* Branches */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
-        {BRANCHES.map(branch => (
-          <Button
-            key={branch}
-            onClick={() => onSelectBranch(branch)}
-            variant={selectedBranch === branch ? 'default' : 'ghost'}
-            className={`w-full justify-start text-left h-auto py-3 px-4 ${
-              selectedBranch === branch
-                ? 'bg-accent text-accent-foreground wireframe-border'
-                : 'hover:bg-muted'
-            }`}
-          >
-            <span className="text-xl mr-3">{BRANCH_ICONS[branch]}</span>
-            <div className="flex flex-col">
-              <span className="font-semibold text-sm">{branch}</span>
-              <span className="tech-label text-xs opacity-70 mt-0.5">
-                {branch === 'Code Generation' && 'Write & refactor'}
-                {branch === 'Content Creation' && 'Draft & edit'}
-                {branch === 'Data Analysis' && 'Process & visualize'}
-                {branch === 'Automation' && 'Design workflows'}
-                {branch === 'Design & UI' && 'Create visuals'}
-                {branch === 'Research' && 'Gather insights'}
-              </span>
+    <aside className="w-72 shrink-0 border-r border-cyan-950/10 bg-white/76 backdrop-blur-xl flex flex-col h-full">
+      <div className="border-b border-cyan-950/10 px-5 py-6">
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="orbital-mark h-9 w-9"><Orbit className="relative z-10 h-4 w-4" /></span>
+            <div>
+              <p className="tech-label text-[10px] text-cyan-700">System map / 01</p>
+              <h1 className="blueprint-headline mt-1 text-2xl">Autonomous<br />AI Hub</h1>
             </div>
-          </Button>
-        ))}
+          </div>
+          <Sparkles className="h-4 w-4 text-pink-400" aria-hidden="true" />
+        </div>
+        <p className="max-w-52 text-sm leading-relaxed text-slate-500">A living map for ideas, agents, and future-facing work.</p>
       </div>
 
-      {/* Footer */}
-      <div className="border-t border-border p-4 text-center">
-        <p className="tech-label text-xs">Powered by Manus API</p>
-        <p className="text-xs text-muted mt-2">v1.0.0</p>
+      <div className="branch-map flex-1 overflow-y-auto px-3 py-5">
+        <div className="mb-3 flex items-center justify-between px-2">
+          <p className="tech-label text-[10px]">Explore branches</p>
+          <span className="signal-pill px-2 py-1"><span className="signal-dot" />6 active</span>
+        </div>
+        <nav className="space-y-1.5" aria-label="AI work branches">
+          {BRANCHES.map((branch) => {
+            const meta = BRANCH_META[branch];
+            const Icon = meta.icon;
+            const active = selectedBranch === branch;
+            return (
+              <Button
+                key={branch}
+                onClick={() => onSelectBranch(branch)}
+                variant="ghost"
+                aria-current={active ? 'page' : undefined}
+                className={`branch-node branch-node--${meta.marker} w-full justify-start h-auto px-3 py-3.5 text-left hover:bg-transparent ${active ? 'branch-node--active' : ''}`}
+              >
+                <span className="ml-5 mr-3 flex h-8 w-8 items-center justify-center rounded-lg border border-slate-900/8 bg-white/70 text-slate-700">
+                  <Icon className="h-4 w-4" aria-hidden="true" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-bold text-slate-900">{branch}</span>
+                  <span className="tech-label mt-1 block truncate text-[10px] opacity-75">{meta.caption}</span>
+                </span>
+                <span className="tech-label text-[10px] text-slate-400">{meta.accent}</span>
+              </Button>
+            );
+          })}
+        </nav>
       </div>
-    </div>
+
+      <div className="border-t border-cyan-950/10 bg-white/55 px-5 py-4">
+        <div className="flex items-center gap-3">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-cyan-500/25 bg-cyan-50 text-cyan-700"><Orbit className="h-4 w-4" /></span>
+          <div><p className="tech-label text-[10px]">Navigation signal</p><p className="mt-0.5 text-xs font-medium text-slate-600">Choose a branch to begin</p></div>
+        </div>
+      </div>
+    </aside>
   );
 }

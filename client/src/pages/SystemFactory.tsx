@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Factory, Orbit, ShieldCheck, Sparkles } from 'lucide-react';
 
 const providerLabels: Record<string, string> = {
   manus: 'Manus',
@@ -84,14 +85,17 @@ export default function SystemFactory() {
   };
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border bg-card px-5 py-4 sm:px-8 flex flex-wrap items-center justify-between gap-4">
-        <div><p className="tech-label text-xs text-primary">GOVERNED / HUMAN-APPROVED</p><h1 className="blueprint-headline text-3xl">System Factory</h1></div>
-        <div className="flex items-center gap-2"><Button variant="ghost" onClick={() => setLocation('/')}>Workspace</Button><Button variant="ghost" onClick={() => setLocation('/task-history')}>Task History</Button><span className="hidden sm:inline text-sm text-muted-foreground">{user?.name || user?.email}</span><Button variant="ghost" onClick={logout}>Sign Out</Button></div>
+    <main className="blueprint-page min-h-screen bg-background text-foreground">
+      <header className="lab-topbar px-5 py-4 sm:px-8">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3"><span className="orbital-mark h-10 w-10"><Factory className="relative z-10 h-4 w-4" /></span><div><p className="tech-label text-[10px] text-cyan-700">Governed / human-approved</p><h1 className="blueprint-headline mt-1 text-3xl">System Factory</h1></div></div>
+          <nav className="flex flex-wrap items-center gap-1.5" aria-label="System Factory destinations"><Button variant="ghost" className="nav-sector" onClick={() => setLocation('/')}>Workspace</Button><Button variant="ghost" className="nav-sector" onClick={() => setLocation('/design-studio')}>Design Studio</Button><Button variant="ghost" className="nav-sector" onClick={() => setLocation('/task-history')}>Task History</Button><Button variant="ghost" className="nav-sector" onClick={() => setLocation('/gemini-developer')}>Gemini Dev</Button><span className="hidden border-l border-slate-900/10 pl-3 text-xs text-muted-foreground xl:inline">{user?.name || user?.email}</span><Button variant="ghost" className="nav-sector hidden sm:inline-flex" onClick={logout}>Sign Out</Button></nav>
+        </div>
       </header>
 
       <section className="max-w-7xl mx-auto p-5 sm:p-8 space-y-6">
         {factoryError && <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-900">Governed action was not applied: {factoryError}</div>}
+        <div className="mission-deck blueprint-panel--glow rounded-2xl p-6 sm:p-7"><div className="relative z-10 flex flex-wrap items-end justify-between gap-4"><div><div className="mb-3 flex flex-wrap items-center gap-2"><span className="signal-pill"><span className="signal-dot signal-dot--violet" />Consent-led development</span><span className="tech-label">No autonomous application</span></div><h2 className="blueprint-headline text-4xl sm:text-5xl">Shape the systems<br />that shape the work.</h2><p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">Trace parent purpose, child experiments, market signals, and reviewable exchange records in one governed workspace.</p></div><div className="blueprint-panel flex items-center gap-3 rounded-xl px-4 py-3"><span className="flex h-9 w-9 items-center justify-center rounded-full border border-cyan-500/25 bg-cyan-50 text-cyan-700"><ShieldCheck className="h-4 w-4" /></span><div><p className="tech-label text-[10px]">Safety posture</p><p className="mt-0.5 text-xs font-medium text-slate-700">Human approval required</p></div></div></div></div>
         <div className="grid gap-4 md:grid-cols-3">
           <Metric label="Parent systems" value={parents.length} detail="Owns purpose and boundaries" />
           <Metric label="Child systems" value={children.length} detail="Proposal-only development" />
@@ -160,9 +164,9 @@ export default function SystemFactory() {
 }
 
 function Metric({ label, value, detail }: { label: string; value: number; detail: string }) {
-  return <div className="rounded-xl border border-border bg-card p-5 wireframe-border"><p className="tech-label text-xs">{label}</p><p className="blueprint-headline text-4xl mt-2">{value}</p><p className="text-sm text-muted-foreground mt-1">{detail}</p></div>;
+  return <div className="blueprint-panel blueprint-panel--glow rounded-2xl p-5"><div className="flex items-start justify-between gap-2"><p className="tech-label text-xs">{label}</p><Sparkles className="h-4 w-4 text-pink-400" /></div><p className="blueprint-headline mt-3 text-5xl">{value}</p><p className="mt-2 text-sm text-muted-foreground">{detail}</p></div>;
 }
 
 function Panel({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
-  return <section className="rounded-xl border border-border bg-card p-5 wireframe-border"><div className="mb-4"><h2 className="blueprint-headline text-xl">{title}</h2><p className="tech-label text-xs mt-1">{subtitle}</p></div>{children}</section>;
+  return <section className="blueprint-panel rounded-2xl p-5 sm:p-6"><div className="mb-5 flex items-start justify-between gap-3"><div><h2 className="blueprint-headline text-2xl">{title}</h2><p className="tech-label mt-1 text-xs">{subtitle}</p></div><Orbit className="h-4 w-4 shrink-0 text-cyan-600" /></div>{children}</section>;
 }

@@ -4,6 +4,7 @@ import { AGENT_PROFILES, AI_PROVIDERS, CONVERSATION_BRANCHES, TASK_STATUSES, typ
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Textarea } from './ui/textarea';
+import { ArrowUpRight, Bot, Compass, Sparkles } from 'lucide-react';
 
 type MessageRole = 'user' | 'assistant';
 type TaskStatus = typeof TASK_STATUSES[number];
@@ -33,6 +34,9 @@ interface ConversationChatProps {
   branch: ConversationBranch;
   forcedProvider?: AIProvider;
   developerContext?: string;
+  starterPrompts?: string[];
+  initialPrompt?: string;
+  engineLabel?: string;
 }
 
 function toMessage(message: { id: number; conversationId: number; role: string; content: string; createdAt: Date }): Message {
@@ -43,7 +47,17 @@ function toMessage(message: { id: number; conversationId: number; role: string; 
   };
 }
 
-export default function ConversationChat({ branch, forcedProvider, developerContext }: ConversationChatProps) {
+const BRANCH_SPARKS: Partial<Record<ConversationBranch, string[]>> = {
+  'Code Generation': ['Sketch a small component that solves one real friction point.', 'Review this feature idea and give me a build sequence.', 'Help me turn a rough app concept into a technical plan.'],
+  'Content Creation': ['Turn this thought into a vivid, useful first draft.', 'Find the strongest angle for this idea and outline it.', 'Create a content system that keeps this voice consistent.'],
+  'Data Analysis': ['Help me decide what signals matter before I analyze.', 'Turn this question into a practical analysis plan.', 'Explain what I should visualize to reveal the pattern.'],
+  Automation: ['Map this repetitive task into an automation workflow.', 'Identify the handoffs that should become automatic.', 'Design a safe human-in-the-loop automation plan.'],
+  'Design & UI': ['Turn this product thought into an unforgettable interface direction.', 'Create a visual system that makes this workflow easier to explore.', 'Critique this experience and propose a sharper interaction model.'],
+  Research: ['Frame this curiosity as a research path with useful questions.', 'Find the assumptions I should test before moving forward.', 'Build a compact research brief for this emerging idea.'],
+  'Gemini Developer': ['Plan a focused refactor for the current codebase.', 'Design a polished web interaction that feels genuinely alive.', 'Review this implementation goal and identify the clearest next step.'],
+};
+
+export default function ConversationChat({ branch, forcedProvider, developerContext, starterPrompts, initialPrompt, engineLabel }: ConversationChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [agentProfile, setAgentProfile] = useState<typeof AGENT_PROFILES[number]>('Lite');
@@ -55,6 +69,7 @@ export default function ConversationChat({ branch, forcedProvider, developerCont
   const terminalTaskIdsRef = useRef(new Set<number>());
   const utils = trpc.useUtils();
   const conversationInput = useMemo(() => ({ branch }), [branch]);
+  const promptSparks = starterPrompts?.length ? starterPrompts : BRANCH_SPARKS[branch] || BRANCH_SPARKS['Code Generation'] || [];
 
   const { data: conversation } = trpc.conversation.getOrCreate.useQuery(conversationInput);
   const conversationId = conversation?.id || 0;
@@ -74,6 +89,10 @@ export default function ConversationChat({ branch, forcedProvider, developerCont
   useEffect(() => {
     if (forcedProvider) setProvider(forcedProvider);
   }, [forcedProvider]);
+
+  useEffect(() => {
+    if (initialPrompt) setInputValue(initialPrompt);
+  }, [initialPrompt]);
 
   const pollInput = useMemo(() => (
     {
@@ -326,16 +345,20 @@ export default function ConversationChat({ branch, forcedProvider, developerCont
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
-      <header className="border-b border-border bg-card p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="blueprint-headline text-2xl">{branch}</h2>
-            <p className="tech-label mt-1">Conversational AI orchestration</p>
+      <header className="mission-deck px-5 py-5 sm:px-7">
+        <div className="relative z-10 flex flex-wrap items-start justify-between gap-5">
+          <div className="flex min-w-0 items-center gap-4">
+            <span className="orbital-mark shrink-0"><Compass className="relative z-10 h-5 w-5" /></span>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2"><p className="tech-label text-cyan-700">{engineLabel ? `Design engine / ${engineLabel}` : `Active mission / ${branch}`}</p><span className="signal-pill"><span className="signal-dot" />Ready</span></div>
+              <h2 className="blueprint-headline mt-2 text-3xl sm:text-4xl">What are we building next?</h2>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Use this branch as a dedicated thinking space. Every exchange stays connected to its own history.</p>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <label className="tech-label" htmlFor="provider">Provider:</label>
+          <div className="blueprint-panel relative z-10 flex flex-wrap items-center gap-2 rounded-xl p-2">
+            <label className="tech-label px-1" htmlFor="provider">Route</label>
             {forcedProvider ? <span className="rounded-md border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-medium text-cyan-950">Google Gemini</span> : <Select value={provider} onValueChange={(value) => setProvider(value as AIProvider)}>
-              <SelectTrigger id="provider" className="w-36">
+              <SelectTrigger id="provider" className="w-36 border-cyan-950/10 bg-white/80">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -344,9 +367,9 @@ export default function ConversationChat({ branch, forcedProvider, developerCont
                 ))}
               </SelectContent>
             </Select>}
-            <label className="tech-label" htmlFor="agent-profile">Agent profile:</label>
+            <label className="tech-label px-1" htmlFor="agent-profile">Depth</label>
             <Select value={agentProfile} onValueChange={(value) => setAgentProfile(value as typeof agentProfile)}>
-              <SelectTrigger id="agent-profile" className="w-32">
+              <SelectTrigger id="agent-profile" className="w-28 border-cyan-950/10 bg-white/80">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -357,19 +380,29 @@ export default function ConversationChat({ branch, forcedProvider, developerCont
         </div>
       </header>
 
-      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 wireframe-border">
+      <div className="chat-stage min-h-0 flex-1 space-y-4 overflow-y-auto p-5 sm:p-7">
         {messages.length === 0 ? (
           <div className="flex h-full items-center justify-center text-center">
-            <div className="blueprint-accent">
-              <p className="blueprint-headline mb-2 text-3xl">Welcome</p>
-              <p className="text-muted-foreground">Start a conversation in the {branch} branch.</p>
+            <div className="empty-orbit text-left">
+              <div className="relative z-10 flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <div className="mb-4 flex items-center gap-2"><span className="signal-pill"><span className="signal-dot signal-dot--pink" />{engineLabel ? 'Engine brief loaded' : 'Blank canvas'}</span><span className="tech-label">{engineLabel || branch}</span></div>
+                  <h3 className="blueprint-headline text-3xl">Begin at the edge<br />of the known.</h3>
+                  <p className="mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">Choose a spark to start exploring, or bring a question that has not yet found its shape.</p>
+                </div>
+                <Sparkles className="h-6 w-6 text-pink-400" aria-hidden="true" />
+              </div>
+              <div className="relative z-10 mt-7 grid gap-2 sm:grid-cols-3">
+                {promptSparks.map((suggestion) => <button key={suggestion} type="button" className="prompt-spark" onClick={() => setInputValue(suggestion)}>{suggestion}<ArrowUpRight className="mt-3 h-3.5 w-3.5 text-cyan-700" /></button>)}
+              </div>
             </div>
           </div>
         ) : messages.map((message) => (
           <div key={message.id} className={`flex gap-3 animate-fade-in-up ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-2xl rounded-lg px-4 py-3 ${message.role === 'user' ? 'bg-accent text-accent-foreground' : 'bg-muted text-foreground wireframe-border-pink'}`}>
+            <div className={`message-card max-w-2xl rounded-2xl px-4 py-3.5 sm:px-5 ${message.role === 'user' ? 'message-card--user text-cyan-950' : 'message-card--assistant text-foreground'}`}>
+              <div className={`mb-2 flex items-center gap-2 ${message.role === 'user' ? 'text-cyan-950/65' : 'text-slate-400'}`}><span className="flex h-5 w-5 items-center justify-center rounded-full border border-current/15"><Bot className="h-3 w-3" /></span><span className="tech-label text-[9px]" style={{ color: 'currentColor' }}>{message.role === 'user' ? 'Your signal' : 'System response'}</span></div>
               <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                {message.content || (message.status === 'processing' ? 'Manus is preparing a response.' : '')}
+                {message.content || (message.status === 'processing' ? 'The system is tracing a useful path…' : '')}
               </p>
               {message.status && (
                 <p className="tech-label status-marker mt-3" data-status={message.status}>
@@ -382,10 +415,11 @@ export default function ConversationChat({ branch, forcedProvider, developerCont
         <div ref={messagesEndRef} />
       </div>
 
-      <footer className="border-t border-border bg-card p-4 wireframe-border">
-        <div className="flex gap-2">
+      <footer className="composer-deck p-4 sm:px-7 sm:py-5">
+        <div className="composer-shell flex gap-2 p-2">
           <Textarea
             value={inputValue}
+            aria-label={`Describe a task for the ${branch} branch`}
             onChange={(event) => setInputValue(event.target.value)}
             onKeyDown={(event) => {
               if (event.key === 'Enter' && !event.shiftKey) {
@@ -394,15 +428,15 @@ export default function ConversationChat({ branch, forcedProvider, developerCont
               }
             }}
             placeholder={branch === 'Gemini Developer' ? 'Describe the code, component, refactor, or web-development task for Gemini...' : `Describe a ${branch.toLowerCase()} task...`}
-            className="min-h-20 resize-none"
+            className="min-h-20 resize-none border-0 bg-transparent shadow-none focus-visible:ring-0"
             rows={3}
             disabled={isLoading}
           />
-          <Button onClick={() => void handleSendMessage()} disabled={isLoading || !inputValue.trim()} className="btn-primary self-end">
-            {isLoading ? 'Working...' : 'Send'}
+          <Button onClick={() => void handleSendMessage()} disabled={isLoading || !inputValue.trim()} className="btn-primary h-11 self-end rounded-xl px-4">
+            {isLoading ? 'Tracing…' : <><span>Send</span><ArrowUpRight className="ml-1.5 h-4 w-4" /></>}
           </Button>
         </div>
-        <p className="tech-label mt-2">Enter to submit · Shift + Enter for a new line</p>
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-2"><p className="tech-label">Enter to submit · Shift + Enter for a new line</p><p className="tech-label text-cyan-700">Conversation memory connected</p></div>
       </footer>
     </div>
   );
