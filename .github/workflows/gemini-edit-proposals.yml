@@ -1,0 +1,76 @@
+name: Gemini Edit Proposals
+on:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: gemini-edit-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    if: >-
+      github.event.sender.type == 'User' &&
+      startsWith(github.event.comment.body, '@gemini-cli') &&
+      !startsWith(github.event.comment.body, '@gemini-cli /approve') &&
+      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Plan a Gemini edit proposal
+        uses: google-github-actions/run-gemini-cli@v0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GEMINI_CLI_TRUST_WORKSPACE: "true"
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API }}
+          github_pr_number: ${{ github.event.issue.pull_request && github.event.issue.number || '' }}
+          github_issue_number: ${{ github.event.issue.number }}
+          workflow_name: gemini-edit-plan
+          settings: >-
+            {"mcpServers":{"github":{"command":"docker","args":["run","-i","--rm","-e","GITHUB_PERSONAL_ACCESS_TOKEN","ghcr.io/github/github-mcp-server:v0.27.0"],"includeTools":["add_issue_comment","issue_read","pull_request_read","get_file_contents","list_commits","search_code"],"env":{"GITHUB_PERSONAL_ACCESS_TOKEN":"${GITHUB_TOKEN}"}}},"tools":{"core":[]}}
+          prompt: /gemini-edit-plan
+
+  apply:
+    if: >-
+      github.event.sender.type == 'User' &&
+      startsWith(github.event.comment.body, '@gemini-cli /approve') &&
+      github.event.comment.author_association == 'OWNER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Apply the approved Gemini edit proposal
+        uses: google-github-actions/run-gemini-cli@v0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GEMINI_CLI_TRUST_WORKSPACE: "true"
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API }}
+          github_pr_number: ${{ github.event.issue.pull_request && github.event.issue.number || '' }}
+          github_issue_number: ${{ github.event.issue.number }}
+          workflow_name: gemini-edit-apply
+          settings: >-
+            {"mcpServers":{"github":{"command":"docker","args":["run","-i","--rm","-e","GITHUB_PERSONAL_ACCESS_TOKEN","ghcr.io/github/github-mcp-server:v0.27.0"],"includeTools":["add_issue_comment","issue_read","pull_request_read","get_file_contents","search_code","create_branch","create_or_update_file","create_pull_request"],"env":{"GITHUB_PERSONAL_ACCESS_TOKEN":"${GITHUB_TOKEN}"}}},"tools":{"core":[]}}
+          prompt: /gemini-edit-apply

@@ -100,6 +100,14 @@
 - [x] Reopen or inspect Task History for the successful Gemini Developer request to confirm the completed stream is persisted.
 - [x] Run a distinctive mirror-only browser validation and verify that the Gemini response reflects the selected private mirror instruction.
 - [x] Verify the successful Gemini Developer task in the browser Task History page with its branch, Google Gemini provider label, completed status, and output preview.
+- [x] Assess supported ways for the consumer Gemini app to access and edit the Autonomous AI Hub source and deployment.
+- [x] Add a secure Gemini-to-GitHub website-editing handoff workflow with review and deployment safeguards.
+- [ ] Validate, publish, and synchronize the Gemini app editing workflow release.
+- [x] Select the approved edit-capable GitHub workflow for Gemini-assisted website changes.
+- [x] Add the supplied Gemini credential as the repository’s encrypted GitHub Actions secret.
+- [x] Add a guarded Gemini CLI workflow that responds only to Gemini requests in issues and pull requests and never deploys directly.
+- [x] Extend the guarded Gemini workflow to support owner-approved requests in pull-request comments as well as issues, then validate both trigger paths.
+- [ ] Verify the guarded Gemini workflow end-to-end from one issue comment and one pull-request comment, confirming plan-first behavior and no deployment action.
 
 ## Security and verification follow-ups
 - [x] Add ownership checks to message.add and task.submit so users cannot write to another user's conversation.
