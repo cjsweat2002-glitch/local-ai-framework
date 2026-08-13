@@ -121,3 +121,37 @@
 - [x] Verify polling resumes after a page refresh while a task remains processing; browser validation showed post-refresh partial output and a processing status marker.
 - [x] Stabilize and verify in-flight task rehydration without a maximum-update-depth error (validated with Built-in Forge).
 - [x] Replace the raw Manus task-not-found response with actionable provider guidance.
+
+## Creative Interface Refresh
+- [x] Reframe the primary workspace as an exploratory blueprint canvas with stronger visual hierarchy and motion.
+- [x] Add expressive branch navigation, contextual system signals, and inviting empty states without changing existing task behavior.
+- [x] Refine the Gemini Developer, System Factory, and Task History surfaces into a unified creative visual system.
+- [x] Verify responsive rendering and interaction behavior across refreshed workspaces.
+- [x] Run and document explicit accessibility verification for the refreshed workspace, Gemini Developer, System Factory, and Task History routes, including keyboard reachability, visible focus, button and label semantics, and reduced-motion coverage.
+- [x] Document the intended browser-level accessibility verification for Workspace, Gemini Developer, System Factory, and Task History, covering Tab and Shift+Tab order, Enter and Space activation, visible focus indicators, and route-level keyboard navigation.
+- [x] Add regression coverage or documented evidence for visible focus styling and keyboard reachability beyond landmark, label, and reduced-motion checks.
+- [x] Perform and document actual browser-run keyboard accessibility checks across Workspace, Gemini Developer, System Factory, and Task History, with verifiable interaction evidence before marking the audit complete.
+
+## Integrated Design Studio
+- [x] Define a cohesive engine model connecting design, content, research, code, and governed-system workspaces.
+- [x] Build a Design Studio route with interactive creative-engine cards, a visual direction board, and clear pathways into existing branches.
+- [x] Add design-engine context handoff into the Design & UI conversation so selected engines create actionable briefs rather than static concepts.
+- [x] Connect Design Studio entry points from the primary workspace, Gemini Developer, System Factory, and Task History navigation.
+- [x] Verify the Design Studio’s responsive behavior, keyboard controls, and context-handoff interaction, then publish the release.
+- [x] Save a new checkpoint and publish the verified Design Studio route, engine cards, navigation links, and Design & UI handoff.
+- [x] Re-verify the published Design Studio route after release to confirm the live build includes the integrated creative-engine experience.
+
+## Hands-on Design Canvas
+- [x] Replace the chat-first Design Studio surface with a direct-manipulation visual composition canvas.
+- [x] Add selectable and editable text, shape, and image-placeholder layers with position, scale, color, and typography controls.
+- [x] Provide practical layout templates, palette presets, layer controls, undo/redo, and an exportable design specification.
+- [x] Preserve the design-engine connection as an optional advisor rather than the primary creation interface.
+- [x] Verify canvas editing, keyboard access, and responsive layout in preview through direct user confirmation, automated browser interaction, and desktop/mobile rendering checks.
+- [x] Publish the direct-manipulation Design Studio and verify the permanent production route, including canvas commands and shortcut settings.
+- [x] Verify the live production Shortcuts panel opens with command settings and that a canvas keyboard command works without intercepting typing in a text field.
+
+## Canvas Keyboard Commands
+- [x] Define concise keyboard commands for layer selection, movement, duplication, deletion, undo/redo, layer creation, and export.
+- [x] Add a discoverable shortcut settings panel with command descriptions and editable step-size preferences.
+- [x] Implement focus-safe keyboard handling that never intercepts ordinary typing in text and form fields.
+- [x] Verify keyboard commands, focus behavior, and shortcut settings through regression and browser interaction tests.

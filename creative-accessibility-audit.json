@@ -1,0 +1,114 @@
+{
+  "baseUrl": "http://127.0.0.1:3000",
+  "routes": [
+    {
+      "path": "/",
+      "keyboardControlCount": 18,
+      "afterTab": {
+        "tag": "BUTTON",
+        "text": "Content CreationDraft & edit02",
+        "outline": "3px"
+      },
+      "afterShiftTab": {
+        "tag": "BUTTON",
+        "text": "Code GenerationWrite & refactor01"
+      },
+      "routeState": {
+        "location": "/",
+        "body": "SYSTEM MAP / 01\n\nAutonomous\nAI Hub\n\nA living map for ideas, agents, and future-facing work.\n\nEXPLORE BRANCHES\n\n6 ACTIVE\nCode Generation\nWRITE & REFACTOR\n01\nCont"
+      }
+    },
+    {
+      "path": "/task-history",
+      "keyboardControlCount": 4,
+      "afterTab": {
+        "tag": "BUTTON",
+        "text": "Design Studio",
+        "outline": "3px"
+      },
+      "afterShiftTab": {
+        "tag": "BUTTON",
+        "text": "Workspace"
+      },
+      "routeState": {
+        "location": "/task-history",
+        "body": "ARCHIVE / EXECUTION MEMORY\n\nTask History\nWORKSPACE\nDESIGN STUDIO\nSYSTEM FACTORY\nGEMINI DEV\nEXECUTION ARCHIVE\n0 RECORDED MISSIONS\nEvery prompt leaves\na trace to "
+      }
+    },
+    {
+      "path": "/system-factory",
+      "keyboardControlCount": 16,
+      "afterTab": {
+        "tag": "BUTTON",
+        "text": "Design Studio",
+        "outline": "3px"
+      },
+      "afterShiftTab": {
+        "tag": "BUTTON",
+        "text": "Workspace"
+      },
+      "routeState": {
+        "location": "/system-factory",
+        "body": "GOVERNED / HUMAN-APPROVED\n\nSystem Factory\nWORKSPACE\nDESIGN STUDIO\nTASK HISTORY\nGEMINI DEV\nSIGN OUT\nCONSENT-LED DEVELOPMENT\nNO AUTONOMOUS APPLICATION\nShape the s"
+      }
+    },
+    {
+      "path": "/gemini-developer",
+      "keyboardControlCount": 17,
+      "afterTab": {
+        "tag": "BUTTON",
+        "text": "Design Studio",
+        "outline": "3px"
+      },
+      "afterShiftTab": {
+        "tag": "BUTTON",
+        "text": "Workspace"
+      },
+      "routeState": {
+        "location": "/gemini-developer",
+        "body": "GOOGLE GEMINI / DEVELOPER BRANCH\n\nGemini Developer\nWORKSPACE\nDESIGN STUDIO\nTASK HISTORY\nSYSTEM FACTORY\nSIGN OUT\nLOCKED ROUTE\nCode with a\nprivate context.\n\nGemin"
+      }
+    },
+    {
+      "path": "/design-studio",
+      "keyboardControlCount": 39,
+      "afterTab": {
+        "tag": "BUTTON",
+        "text": "Task History",
+        "outline": "3px"
+      },
+      "afterShiftTab": {
+        "tag": "BUTTON",
+        "text": "Workspace"
+      },
+      "routeState": {
+        "location": "/design-studio",
+        "body": "HANDS-ON VISUAL WORKSPACE\n\nDesign Studio\nWORKSPACE\nTASK HISTORY\nSYSTEM FACTORY\nGEMINI DEV\nSIGN OUT\nCANVAS MODE\nCREATE FIRST · ADVISE SECOND\nCompose it. Move it."
+      }
+    }
+  ],
+  "timestamp": "2026-08-13T06:10:12.492Z",
+  "cookieConfigured": true,
+  "branchActivation": true,
+  "taskHistoryFocusedControl": "Task History",
+  "enterRouteNavigation": "/task-history",
+  "canvasNudge": {
+    "before": "328.453px",
+    "after": "319.062px"
+  },
+  "shortcutSettings": true,
+  "typingSafety": {
+    "focusedInput": true,
+    "layerCountBefore": 5,
+    "layerCountAfter": 5
+  },
+  "designEngineSelection": {
+    "selected": true,
+    "console": true
+  },
+  "designStudioHandoff": {
+    "path": "/",
+    "branch": true,
+    "prompt": true
+  }
+}
